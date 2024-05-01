@@ -1,0 +1,35 @@
+version: '3'
+services:
+  songs_db:
+    build: 
+      context: /db
+      dockerfile: Dockerfile
+    ports: 
+      - 5432:5432
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    songs:
+    build: 
+      context: /app
+      dockerfile: Dockerfile
+    ports: 
+      - 8088:8088
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=admin
+      - DB_PORT=5432
+      - DB_NAME=musicLand
+      - DB_HOST=localhost
+    networks: 
+      - backend
+    depends_on:
+      - songs_db
+    command: sh -c './wait-for 172.25.0.2:5432 -- cmd'
+
+networks:
+  backend:
+    driver: bridge

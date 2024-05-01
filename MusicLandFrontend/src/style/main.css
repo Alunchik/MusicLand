@@ -1,0 +1,17 @@
+@import "button.css";
+
+main{
+    min-height: 100vh;
+    background-color:darkgray;
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+button{
+    margin-bottom: 40px;
+}
+li{
+    list-style-type: none;
+}
