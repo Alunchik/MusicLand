@@ -1,0 +1,28 @@
+version: '3'
+services:
+  songs_db:
+    image: postgres:13.3
+    ports: 
+      - 5431:5431
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+
+  audio_db:
+    # build: 
+    #   context: ../../Audio
+    #   dockerfile: Dockerfile
+    image: mongo:6-jammy
+    ports:
+      - 27017:27017
+    volumes:
+      - dbdata6:/data/db
+    volumes:
+      - ./Songs/data:/var/lib/postgresql/data
+      - ./Songs/init:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
