@@ -10,7 +10,7 @@ import(
     "github.com/gorilla/mux"
 	"log"
     "io"
-    "strconv"
+    //"strconv"
     "strings"
 	"encoding/json"
 	//"os"
@@ -18,6 +18,8 @@ import(
     "bytes"
 	"time"
 	"context"
+    //"github.com/go-audio/audio"
+	//"github.com/go-audio/wav"
 )
 
 var upgrader = websocket.Upgrader{
@@ -115,7 +117,7 @@ func GetCollection(client *mongo.Client, collectionName string) *mongo.Collectio
 func uploadFile(w http.ResponseWriter, r *http.Request) {
         file, header, err := r.FormFile("audio")
         if err != nil {
-            log.Fatal(err)
+            log.Fatal("err reading file: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -125,7 +127,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
             DB.Database("musicLand"), opt,
         )
         if err != nil {
-            log.Fatal(err)
+            log.Fatal("Erroc connecting: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -142,7 +144,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
             filename,
         )
         if err != nil {
-            log.Fatal(err)
+            log.Fatal("Error uploading to mongoDB: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -167,12 +169,26 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 func serveFile(w http.ResponseWriter, r *http.Request){
         //audioIdaudioId := strings.TrimPrefix(r.URL.Path, "/audio/")
-        audioId := r.URL.Query().Get("id")
-        log.Println(audioId)
-        objID, err := primitive.ObjectIDFromHex(audioId)
+        //audioId := r.URL.Query().Get("id")
+        
+        conn, err := upgrader.Upgrade(w, r, nil)
+        if err != nil {
+            log.Println("Error upgrading websocket connection:", err)
+            return
+        }
+        defer conn.Close()
+
+        _, audioId, err := conn.ReadMessage()
+        if err != nil {
+            log.Println("Error reading message:", err)
+            return
+        }
+        
+        log.Println(string(audioId))
+
+        objID, err := primitive.ObjectIDFromHex(string(audioId))
         if err != nil {
             log.Fatal("343", err)
-            renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
 
@@ -184,17 +200,36 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         dStream, err := bucket.DownloadToStream(objID, &buf)
         if err != nil {
             log.Fatal(err)
-            renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
 
+        // Читаем и отправляем аудиоданные вебсокетом
+    // var chunkSize = 10240
+
+    // audioBytes := buf.Bytes()
+    	// Переменная для отслеживания позиции в исходном массиве байт
+	// position := 0
+
+	// // Читаем данные по частям из исходного массива и сохраняем их в массив байт ограниченного размера
+	// for position < len(audioBytes) {
+	// 	bytesToRead := len(audioBytes) - position
+	// 	if bytesToRead > chunkSize {
+	// 		bytesToRead = chunkSize
+	// 	}
+
+    //     chunk := make([]byte, bytesToRead)
+
+
+    //     err = conn.WriteMessage(websocket.BinaryMessage, encoded)
+    //     if err != nil {
+    //         log.Println("Error writing to websocket:", err)
+    //         return
+    //     }
+    //     position+=chunkSize
+    // }
         log.Printf("File size to download: %v\n", dStream)
-        contentType := http.DetectContentType(buf.Bytes())
+        err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
 
-        w.Header().Add("Content-Type", contentType)
-        w.Header().Add("Content-Length", strconv.Itoa(len(buf.Bytes())))
-
-        w.Write(buf.Bytes())
 }
 
 

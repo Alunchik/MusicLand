@@ -3,7 +3,6 @@ package songstore
 import (
 "gorm.io/gorm"
 "os"
-
     "gorm.io/driver/postgres"
 )
 
@@ -12,7 +11,7 @@ type Song struct {
 	id int `json:"id"` 
 	Title string `json:"title"`
 	ArtistID int `json: "artistID"`
-	AudioID string 
+	AudioID string `json: "audioID"`
 }
 
 type SongStore struct {

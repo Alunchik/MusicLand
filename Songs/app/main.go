@@ -11,6 +11,7 @@ import (
 	//"github.com/gorilla/handlers"
 	"github.com/rs/cors"
 	//"time"
+
 	"net/http"
 	"github.com/gorilla/mux"
 	"musicland.com/songs/internal/songstore"
@@ -130,6 +131,10 @@ func (ss *songServer) createSongHandler(w http.ResponseWriter, r *http.Request) 
 	}
 	
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+	  log.Fatal("Error loading .env file")
+	}
 	r := mux.NewRouter()
 	server := NewSongServer()
 	r.HandleFunc("/songs", server.getAllSongsHandler).Methods(http.MethodGet)

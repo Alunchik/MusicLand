@@ -82,10 +82,10 @@ export const selectAllSongs = state => state.songs.songs;
 
 export const fetchSongs = createAsyncThunk('songs/fetchSongs', async () => {
   const response = await axios.get('http://localhost:8088/songs', {
-     mode: 'no-cors',
-    });
-    console.log(response)
-    return response.data
+    mode: 'no-cors',
+   });
+   console.log(response)
+   return response.data
 });
 
 export default songsSlice.reducer;

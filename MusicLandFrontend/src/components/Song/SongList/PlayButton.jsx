@@ -2,72 +2,91 @@ import React, { Component } from "react";
 
 import "../../../style/Songs/songElement.css";
 
-class PlayButton extends Component {
+const PlayButton = (props) => {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-          playing: true
-        };
-        this.audioEl = props.url
-      }
-       
+      const playing = true
+
+      const id = props.id
     
-  
-    onPlay = (event) => {
-      this.setState({ playing: true });
-    };
-    onPause = (event) => {
-      this.setState({ playing: false });
-    };
-    onEnded = (event) => {
-      this.setState({ playing: false });
-    };
-
-    playAudio = () => {
-        this.audioEl.play();
-        const audio = this.audioEl;
-        audio.addEventListener("play", this.onPlay);
-        audio.addEventListener("pause", this.onPause);
+      const startSocket = (id) => {
+       const socket = new WebSocket('ws://localhost:8089/audio')
+       socket.binaryType = "arraybuffer"
+          socket.onopen = (event) => {
+              console.log("socket opened"+event.data);
+            };
+      
+          socket.onmessage = function (event) {
+              const audio = event.data;
+              try {
+                console.log("got: " + audio)
+                //dispatch(addMessage({ message: audio }));
+              } catch (err) {
+                console.log(err);
+              }
+              if (audio instanceof ArrayBuffer) {
+              playAudio(audio);
+              }
+              else{
+                console.log("not array buffer");
+              }
+            };
+            socket.send(id);
       };
     
-      pauseAudio = () => {
+      //const dispatch = useDispatch();
+    
+      //const messages = useSelector((state) => state.messages.messages);
+    
+    
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    const playAudio = (audioData) => {
+    // Декодируем аудиоданные в AudioBuffer
+    audioContext.decodeAudioData(audioData, function(buffer) {
+      // Создаем AudioBufferSourceNode
+      const source = audioContext.createBufferSource();
+      
+      // Прикрепляем к AudioBufferSourceNode созданный AudioBuffer
+      source.buffer = buffer;
+      
+      // Подключаем AudioBufferSourceNode к выходу AudioContext
+      source.connect(audioContext.destination);
+      
+      // Начинаем воспроизведение
+      source.start(0);
+    });
+        
+        // Начинаем воспроизведение
+        console.log("PLAYING")
+    };
+      
+    const onPlay = (event) => {
+      this.setState({ playing: true });
+      startSocket()
+      playAudio()
+    };
+   const  onPause = (event) => {
+      this.setState({ playing: false });
+    };
+   const  onEnded = (event) => {
+      this.setState({ playing: false });
+    };
+    
+      const pauseAudio = () => {
         console.log("pausing")
         this.setState({ playing: false });
-        this.audioEl.pause();
       };
-    
-      startAudio = () => {
-        console.log("playibg")
-        this.playAudio();
-      };
-      renderAudio = () => {
-      const { url } = this.props;
-      const { playing } = this.state;
       const notSupportedMsg =
-        "Your browser does not support the <code>audio</code> element.";
-      return (
+      "Your browser does not support the <code>audio</code> element.";
+      return(
         <>
           {!playing && (
-            <div className="audio-btn pause-btn" onClick={this.startAudio}></div>
+            <div className="audio-btn pause-btn" onClick={startSocket}></div>
           )}
-          {playing && <div className="audio-btn play-btn" onClick={this.pauseAudio}></div>}
-  
-          <audio
-            src={url}
-            ref={(ref) => {
-              this.audioEl = ref;
-            }}
-          >
-            {notSupportedMsg}
-          </audio>
+          {playing && <div className="audio-btn play-btn" onClick={pauseAudio}></div>}
+
         </>
-      );
-    };
-  
-    render() {
-      return this.renderAudio();
-    }
+      )
   }
   
 export default PlayButton
