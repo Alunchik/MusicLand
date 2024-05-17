@@ -9,11 +9,11 @@ import (
 
 // User модель пользователя
 type User struct {
-	id       int    `json:"id"`
-	login    string `json:"login"`
-	name     string `json:"name"`
-	password string `json:"password"`
-	role     string `json:"role"`
+	Id       int    `json:"id"`
+	Login    string `json:"login"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 type UserStore struct {
@@ -37,14 +37,14 @@ func (ss *UserStore) CreateUser(user User) int {
 	if result.Error != nil {
 		panic(result.Error)
 	}
-	return user.id
+	return user.Id
 }
 
 func (ss *UserStore) DeleteUserById(id int) int {
 	user := User{}
 	ss.db.Delete(&user, id)
 	//result := db.Where("ID := ?", id).Delete(&Song)
-	return user.id
+	return user.Id
 }
 
 func (ss *UserStore) GetAllUsers() []User {
@@ -64,7 +64,7 @@ func (ss *UserStore) GetAllUsers() []User {
 	return users
 }
 
-func (ss *UserStore) GetUserssByName(userName string) []User {
+func (ss *UserStore) GetUsersByName(userName string) []User {
 	//ss.Lock()
 	//defer ss.Unlock()
 
@@ -76,7 +76,7 @@ func (ss *UserStore) GetUserssByName(userName string) []User {
 	return users
 }
 
-func (ss *UserStore) GetUserssByLogin(userName string) []User {
+func (ss *UserStore) GetUsersByLogin(userName string) []User {
 	//ss.Lock()
 	//defer ss.Unlock()
 
