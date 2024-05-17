@@ -2,7 +2,7 @@ import SongElement from "./SongElement";
 
 function RenderSongs(songs) {
     return (
-        <ul>
+        <ul class="songList">
         {
             songs.map( (songData) => {
                 return(

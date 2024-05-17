@@ -1,18 +1,19 @@
 package songstore
 
 import (
-"gorm.io/gorm"
-"os"
+	"os"
 
-    "gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"gorm.io/driver/postgres"
 )
 
 type Song struct {
 	gorm.Model
-	id int `json:"id"` 
-	Title string `json:"title"`
-	ArtistID int `json: "artistID"`
-	AudioID string 
+	id       int    `json:"id"`
+	Title    string `json:"title"`
+	ArtistID int    `json: "artistID"`
+	AudioID  string `json: "songID"`
 }
 
 type SongStore struct {
@@ -21,15 +22,16 @@ type SongStore struct {
 	//songs map[int]Song
 	//nextId int
 }
-func New() *SongStore{
-	ss := &SongStore{} 
+
+func New() *SongStore {
+	ss := &SongStore{}
 	dsn := "host=" + os.Getenv("DB_HOST") + " user=" + os.Getenv("DB_USER") + " dbname=" + os.Getenv("DB_NAME") + " password=" + os.Getenv("DB_PASSWORD") + " sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	ss.db = db
 	db.Debug().AutoMigrate(&Song{})
 	if err != nil {
-    panic(err)
-}
+		panic(err)
+	}
 	//ss.songs = make(map[int]Song)
 	//ss.nextId = 0
 	return ss
@@ -40,24 +42,23 @@ func (ss *SongStore) CreateSong(title string, artistId int) int {
 	//defer ss.Unlock()
 
 	song := Song{
-		Title : title,
-		ArtistID : artistId}
-		result := ss.db.Create(&song) 
-		if result.Error != nil {
-        panic(result.Error)
-    }
-		//ss.songs[ss.nextId] = song
-		//ss.nextId++
-		return song.id
+		Title:    title,
+		ArtistID: artistId}
+	result := ss.db.Create(&song)
+	if result.Error != nil {
+		panic(result.Error)
+	}
+	//ss.songs[ss.nextId] = song
+	//ss.nextId++
+	return song.id
 }
 
-func (ss *SongStore) DeleteSongById(id int) int{
+func (ss *SongStore) DeleteSongById(id int) int {
 	song := Song{}
 	ss.db.Delete(&song, id)
 	//result := db.Where("ID := ?", id).Delete(&Song)
 	return song.id
 }
-
 
 func (ss *SongStore) GetAllSongs() []Song {
 	//ss.Lock()
@@ -70,9 +71,9 @@ func (ss *SongStore) GetAllSongs() []Song {
 
 	var songs []Song
 	result := ss.db.Find(&songs)
-    if result.Error != nil {
-        panic(result.Error)
-    }
+	if result.Error != nil {
+		panic(result.Error)
+	}
 	return songs
 }
 
@@ -82,9 +83,9 @@ func (ss *SongStore) GetSongsByName(songName string) []Song {
 
 	var songs []Song
 	result := ss.db.Where("title = ?", songName).Find(&songs)
-    if result.Error != nil {
-        panic(result.Error)
-    }
+	if result.Error != nil {
+		panic(result.Error)
+	}
 	return songs
 }
 

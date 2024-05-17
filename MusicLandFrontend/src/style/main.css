@@ -8,9 +8,23 @@ main{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: center;
+    
+}
+.songList li{
+    margin: 10px;
 }
 button{
-    margin-bottom: 40px;
+    margin-bottom: 80px;
+}
+form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 20px;
+    justify-content: space-between;
+    min-height: 300px;
+    max-width: 300px;
 }
 li{
     list-style-type: none;

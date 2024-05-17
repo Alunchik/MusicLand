@@ -130,10 +130,15 @@ func (ss *songServer) createSongHandler(w http.ResponseWriter, r *http.Request) 
 	}
 	
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+	  log.Fatal("Error loading .env file")
+	}
 	r := mux.NewRouter()
 	server := NewSongServer()
 	r.HandleFunc("/songs", server.getAllSongsHandler).Methods(http.MethodGet)
 	r.HandleFunc("/songs", server.createSongHandler).Methods(http.MethodPost)
+	r.HandleFunc("/songs/{name}", server.getSongByNameHandler).Methods(http.MethodGet)
 	r.HandleFunc("/songs/{id}", server.DeleteSongByIdHandler).Methods(http.MethodDelete)
 	// srv := &http.Server{
     //     Handler:      r,
