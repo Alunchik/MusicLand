@@ -6,14 +6,15 @@ import (
 	"gorm.io/gorm"
 
 	"gorm.io/driver/postgres"
+
 )
 
 type Song struct {
 	gorm.Model
-	id       int    `json:"id"`
-	Title    string `json:"title"`
-	ArtistID int    `json: "artistID"`
-	AudioID  string `json: "songID"`
+	id int `json:"id"` 
+	Title string `json:"title"`
+	ArtistID int `json: "artistID"`
+	AudioID string `json: "audioID"`
 }
 
 type SongStore struct {

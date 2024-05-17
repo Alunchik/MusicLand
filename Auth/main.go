@@ -128,6 +128,7 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+<<<<<<< HEAD
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Разрешаем запросы от всех доменов
@@ -145,7 +146,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
 func main() {
 
 	err := godotenv.Load()
@@ -153,11 +153,6 @@ func main() {
 	  log.Fatal("Error loading .env file")
 	}
 
-	
-	
-
-	userserver := NewUserServer()
-	r := mux.NewRouter()
 	corsOptions := cors.Options{
 		AllowedOrigins:     []string{"*"},
 		AllowedMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
@@ -169,11 +164,9 @@ func main() {
 		},
 	};
 	corsHandler := cors.New(corsOptions).Handler(r)
-
 	r.HandleFunc("/register", userserver.registerHandler)
 	r.HandleFunc("/login", userserver.loginHandler)
 	r.HandleFunc("/protected", authMiddleware(protectedHandler))
-
 	fmt.Println("Server started at :8087")
 	http.ListenAndServe(":8087", corsHandler)
 }

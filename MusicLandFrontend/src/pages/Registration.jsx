@@ -18,6 +18,7 @@ const Registration = () => {
         axios.post("http://localhost:8087/register", data, {
           headers: {
             "Content-type": "application/json",
+
           },
         })
         .then((res) => {
