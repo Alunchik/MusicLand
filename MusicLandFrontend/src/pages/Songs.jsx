@@ -18,7 +18,6 @@ const dispatch = useDispatch()
 
   return(
         <main>
-          <WebSocketElem/>
             <div className='SongPage'>
                 {SongList(songs)}
             </div>

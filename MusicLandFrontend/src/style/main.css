@@ -11,6 +11,9 @@ main{
     align-items: center;
     
 }
+.songList li{
+    margin: 10px;
+}
 button{
     margin-bottom: 80px;
 }

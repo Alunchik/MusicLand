@@ -22,8 +22,10 @@ const Registration = () => {
         });
     };
 
-    const [file, setName] = useState('');
-    const [name, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [passord, setPassword] = useState('');
+    const [login, setLogin] = useState('');
+
 
 
     const handleChangeName = (e) => {
@@ -34,12 +36,22 @@ const Registration = () => {
        setPassword(e.target.value)
     }
 
+    
+    const handleChangeLogin = (e) => {
+      setLogin(e.target.value)
+   }
   return(
       <main>
       <form onSubmit={OnSumbit}>
-      <input type="text" name="name" id="name" onChange={handleChangeName} />
+        <label htmlFor="login">Login</label>
+      <input type="login" name="login" id="login" onChange={handleChangeLogin} />
+      <label htmlFor="name">Name</label>
+
+      <input type="name" id="name" onChange={handleChangeName} />
+      <label htmlFor="password">Password</label>
+
       <input type="password" id="password" onChange={handleChangePassword} />
-      <button>Register</button>
+      <button>Login</button>
     </form>
         </main>
     );
