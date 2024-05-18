@@ -24,9 +24,11 @@ const AddSong = () => {
         .then((res) => {
           var songId = res.data.fileId
           console.log(`Success: ` + songId);
-          axios.post('http://localhost:8088/songs',
+          axios.post("http://localhost:8088/songs",
           {"title":name, "audioId":songId}, {
-    mode: 'no-cors',
+            headers: {
+              "Content-type": "application/json",
+            },
           }).then((res) =>{
           console.log(`Success:!!!!`);
         }).catch((err) => {

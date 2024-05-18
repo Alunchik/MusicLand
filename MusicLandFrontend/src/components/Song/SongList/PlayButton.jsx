@@ -1,20 +1,30 @@
 import React, { Component } from "react";
-
+import { useState } from "react";
+import { useEffect } from "react";
 import "../../../style/Songs/songElement.css";
 
 const PlayButton = (props) => {
 
-      const playing = true
+  // const [playing, setPlaying] = useState(false);
+  // useEffect(() => {
+  //   console.log('Состояние было изменено');
+  //   if(playing){
+  //     startSocket()
+  //   }
+  // }, [playing]);
 
-      const id = props.id
-    
-      const startSocket = (id) => {
+  //   const togglePlaying = () => {
+  //     setPlaying(!playing)
+  //   }
+    const id = props.id;
+      const startSocket = () => {
+        console.log(id)
        const socket = new WebSocket('ws://localhost:8089/audio')
        socket.binaryType = "arraybuffer"
           socket.onopen = (event) => {
-              console.log("socket opened"+event.data);
+              console.log("socket opened ");
+              socket.send(id);
             };
-      
           socket.onmessage = function (event) {
               const audio = event.data;
               try {
@@ -30,7 +40,8 @@ const PlayButton = (props) => {
                 console.log("not array buffer");
               }
             };
-            socket.send(id);
+            
+            console.log("sent");
       };
     
       //const dispatch = useDispatch();
@@ -59,32 +70,15 @@ const PlayButton = (props) => {
         // Начинаем воспроизведение
         console.log("PLAYING")
     };
-      
-    const onPlay = (event) => {
-      this.setState({ playing: true });
-      startSocket()
-      playAudio()
-    };
-   const  onPause = (event) => {
-      this.setState({ playing: false });
-    };
-   const  onEnded = (event) => {
-      this.setState({ playing: false });
-    };
-    
-      const pauseAudio = () => {
-        console.log("pausing")
-        this.setState({ playing: false });
-      };
+
       const notSupportedMsg =
       "Your browser does not support the <code>audio</code> element.";
       return(
         <>
-          {!playing && (
-            <div className="audio-btn pause-btn" onClick={startSocket}></div>
-          )}
-          {playing && <div className="audio-btn play-btn" onClick={pauseAudio}></div>}
-
+          {/* {(
+            <div className={"audio-btn " + playing ? "play-btn" : "pause-btn"} onClick={togglePlaying}></div>
+          )} */}
+          <div className={"audio-btn play-btn"} onClick={startSocket}></div>
         </>
       )
   }

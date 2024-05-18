@@ -3,27 +3,38 @@ import { Route, Routes } from 'react-router-dom';
 
 import React  from 'react';
 
-import Main from '../pages/Main';
 import Songs from '../pages/Songs';
 import Registration from '../pages/Registration';
 import Login from '../pages/Login';
 import AddSong from '../pages/AddSong';
+import UserDetails from '../pages/UserDetails';
+import { useSelector } from 'react-redux';
 
 
 
 const PageRoute = () => {
-function route(elem) {
-        return true ? elem : <div/>
+
+    const authStatus = useSelector(state => state.jwt.status);
+
+    const isAuth = () => {
+        console.log(authStatus)
+        return  (authStatus === "auth")
+    }
+
+function protect(elem) { 
+        return isAuth ? elem : <Login/>
+}
+function onlyUnauth(elem) {
+    return !isAuth ? elem : <></>
 }
 
     return (
         <div>
 <Routes>
-    <Route path = "/" element={route(<Main/>)}></Route>
-    <Route path = "/songs" element={route(<Songs/>)}></Route>
-    <Route path = "/registration" element={route(<Registration/>)}></Route>
-    <Route path = "/login" element={route(<Login/>)}></Route>
-    <Route path = "/addSong" element={route(<AddSong/>)}></Route>
+    <Route path = "/" element={protect(<Songs/>)}></Route>
+    <Route path = "/registration" element={onlyUnauth(<Registration/>)}></Route>
+    <Route path = "/addSong" element={protect(<AddSong/>)}></Route>
+    <Route path = "/me" element={protect(<UserDetails/>)}></Route>
 </Routes>
         </div>
     );

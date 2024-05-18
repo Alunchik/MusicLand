@@ -1,12 +1,12 @@
 version: '3'
 services:
-  songs_db:
+  songdetails_db:
     image: postgres:13.3
     ports: 
-      - 5432:5431
+      - "5431:5432/tcp"
     volumes:
-      - ./db/songs/data:/var/lib/postgresql/data
-      - ./db/songs/init:/docker-entrypoint-initdb.d
+      - ./db/data/songdetails:/var/lib/postgresql/data
+      - ./db/init/songdetails:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
@@ -15,17 +15,20 @@ services:
     # build: 
     #   context: ../../Audio
     #   dockerfile: Dockerfile
+    volumes:
+      - /db/data/audio:/data/db
     image: mongo
     ports:
       - 27017:27017
+    
 
   auth_db:
     image: postgres:13.3
     ports: 
-      - 5433:5433
+      - 5433:5432
     volumes:
-      - ./db/auth/data:/var/lib/postgresql/data
-      - ./db/auth/init:/docker-entrypoint-initdb.d
+      - ./db/data/auth:/var/lib/postgresql/data
+      - ./db/init/auth:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin

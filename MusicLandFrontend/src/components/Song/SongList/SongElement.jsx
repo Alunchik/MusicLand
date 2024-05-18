@@ -1,18 +1,25 @@
+import { useState } from "react";
+import { useEffect } from "react";
 import PlayButton from "./PlayButton"
+import axios from "axios";
 
-function SongElement(songData) {
+const SongElement = (props) => {
+
     return (
         <div class="songElement">
-            <PlayButton id={songData.audioId} />
             <div className="artistName">
+                {PlayButton({id: props.AudioID})}
             {
-                 songData.artistName
+                props.ArtistName
             }
             </div>
             <div className="title">
             {
-                 songData.title
+                 props.title
             }
+            </div>
+            <div>
+            {props.AudioID}
             </div>
         </div>
     )    

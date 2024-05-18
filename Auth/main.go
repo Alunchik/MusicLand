@@ -57,6 +57,7 @@ func (userserver *UserServer) registerHandler(w http.ResponseWriter, r *http.Req
 	newUser.Password = hashPassword(newUser.Password)
 	newUser.Role="user"
 	userserver.store.CreateUser(newUser)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -97,7 +98,7 @@ func (userserver *UserServer) loginHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
 }
@@ -128,47 +129,25 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-<<<<<<< HEAD
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Разрешаем запросы от всех доменов
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		// Разрешаем использование всех методов и заголовков
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Пропускаем запрос к следующему обработчику
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 func main() {
 
 	err := godotenv.Load()
 	if err != nil {
 	  log.Fatal("Error loading .env file")
 	}
-
-	corsOptions := cors.Options{
-		AllowedOrigins:     []string{"*"},
-		AllowedMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowedHeaders:     []string{"*"},
-		ExposedHeaders:    []string{"*"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "*"
-		},
-	};
-	corsHandler := cors.New(corsOptions).Handler(r)
+	userserver := NewUserServer();
+	r := mux.NewRouter()
 	r.HandleFunc("/register", userserver.registerHandler)
 	r.HandleFunc("/login", userserver.loginHandler)
 	r.HandleFunc("/protected", authMiddleware(protectedHandler))
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
+	})
+	handler := c.Handler(r)
 	fmt.Println("Server started at :8087")
-	http.ListenAndServe(":8087", corsHandler)
+	http.ListenAndServe(":8087", handler)
 }
 
 func protectedHandler(w http.ResponseWriter, r *http.Request) {

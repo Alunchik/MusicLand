@@ -7,6 +7,7 @@ import(
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/gridfs"
     "go.mongodb.org/mongo-driver/mongo/options"
+    "github.com/rs/cors"
     "github.com/gorilla/mux"
 	"log"
     "io"
@@ -75,15 +76,10 @@ func Websockethandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var DB *mongo.Client = ConnectDB()
-var name = "photos"
+var name = "audio"
 var opt = options.GridFSBucket().SetName(name)
 
 func EnvMongoURI() string {
-    // err := godotenv.Load()
-    // if err != nil {
-    //     log.Fatal("Error loading .env file")
-    // }
-    // return os.Getenv("MONGOURI")
 	return("mongodb://localhost:27017/MusicLand")
 }
 
@@ -115,6 +111,11 @@ func GetCollection(client *mongo.Client, collectionName string) *mongo.Collectio
 }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodOptions {
+        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+        w.WriteHeader(http.StatusOK)
+        return
+       }
         file, header, err := r.FormFile("audio")
         if err != nil {
             log.Fatal("err reading file: ", err)
@@ -238,7 +239,13 @@ func StartServer() {
 	r.HandleFunc("/upload", uploadFile).Methods(http.MethodPost)
     r.HandleFunc("/audio", serveFile).Methods(http.MethodGet)
 	http.HandleFunc("/", Websockethandler)
-	http.ListenAndServe(":8089", r)
+    c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
+	})
+	handler := c.Handler(r)
+	http.ListenAndServe(":8089", handler)
 }
 
 func main() {

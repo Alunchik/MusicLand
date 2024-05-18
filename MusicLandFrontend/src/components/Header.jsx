@@ -12,10 +12,10 @@ function Header() {
             <Link to={"/"}>Main</Link>
             </p>
             <p>
-            <Link to={"/songs"}>Songs</Link>
+            <Link to={"/addSong"}>Add Song</Link>
             </p>
             <p>
-            <Link to={"/details"}>Me</Link>
+            <Link to={"/me"}>Me</Link>
             </p>
             </div>
         </header>    
