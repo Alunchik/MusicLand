@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"github.com/joho/godotenv"
-	"fmt"
 	"github.com/gorilla/mux"
+	"errors"
 	"time"
 	"github.com/rs/cors"
 	"net/http"
@@ -96,7 +96,7 @@ func (userserver *UserServer) getUserByLoginHandler(w http.ResponseWriter, req *
 }
 
 
-func createJWT(login string, role string) string, error{
+func createJWT(login string, role string) (string, error){
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := CustomClaims{
 		Login: login,
@@ -123,10 +123,9 @@ func (userserver *UserServer) loginHandler(w http.ResponseWriter, r *http.Reques
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		returnhttp.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	tokenString, err != Login(creds);
+	tokenString, err := userserver.Login(creds);
 	if(err!=nil) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -154,7 +153,7 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			fmt.Println("Authenticated user:", claims.Login)
+			log.Println("Authenticated user:", claims.Login)
 			next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
@@ -162,7 +161,7 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func Login(creds Credentials) string, error{
+func (userserver *UserServer) Login(creds Credentials) (string, error){
 	var user userstore.User
 	for _, u := range userserver.store.GetUsersByLogin(creds.Login) {
 		if  bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(creds.Password)) == nil {
@@ -171,12 +170,15 @@ func Login(creds Credentials) string, error{
 		}
 	}
 
-	if user.Id == 0 {
-		return errors.New("Invalid credentials")
+	if user.Login != creds.Login {
+		return "", errors.New("Invalid credentials")
 	}
 	// Создаем JWT
-	tokenString := createJWT(user.Login, user.Role)
-	return tokenString
+	tokenString, e := createJWT(user.Login, user.Role)
+	if(e!=nil){
+		return "", e
+	}
+	return tokenString, nil
 }
 
 func main() {
@@ -189,18 +191,14 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/register", userserver.registerHandler)
 	r.HandleFunc("/login", userserver.loginHandler)
-	r.HandleFunc("/getUserByLogin", userserver.getUserByLoginHandler)
-	r.HandleFunc("/protected", authMiddleware(protectedHandler))
+	r.HandleFunc("/getUserByLogin", authMiddleware(userserver.getUserByLoginHandler))
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
+		AllowedHeaders:[]string{"*"},
 		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
 	})
 	handler := c.Handler(r)
-	fmt.Println("Server started at :8087")
+	log.Println("Server started at :8087")
 	http.ListenAndServe(":8087", handler)
 }          
-
-func protectedHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Protected content"))
-}

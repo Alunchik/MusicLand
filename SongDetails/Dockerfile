@@ -15,7 +15,7 @@ RUN go get
 RUN go build -o main .
 
 # Expose ports to the outside world
-EXPOSE 8089
+EXPOSE 8088
 
 # Command to run the executable
 CMD ["./main"]

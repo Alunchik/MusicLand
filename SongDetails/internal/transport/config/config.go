@@ -41,9 +41,7 @@ func CORS(next http.Handler) http.Handler {
 				return
 			}
 
-
 			fmt.Println("ok")
-	
 			// Next
 			next.ServeHTTP(w, r)
 			return
@@ -52,6 +50,18 @@ func CORS(next http.Handler) http.Handler {
 	
 	func AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+			w.Header().Set("Access-Control-Allow-Headers:", "*")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "*")
+
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
 			tokenString := r.Header.Get("Authorization")
 			if tokenString == "" {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -66,9 +76,13 @@ func CORS(next http.Handler) http.Handler {
 				return
 			}
 	
-			if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && claims.Role=="admin"{
+			if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+				if(claims.Role=="admin"){
 				fmt.Println("Authenticated user:", claims.Login)
 					next.ServeHTTP(w, r)
+				} else {
+					http.Error(w, "Access is permitted only with admin role", http.StatusUnauthorized)
+				}
 			} else {
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 			}

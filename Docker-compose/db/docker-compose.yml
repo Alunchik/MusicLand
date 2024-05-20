@@ -10,25 +10,30 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
+    hostname: postgres
 
   audio_db:
     # build: 
     #   context: ../../Audio
     #   dockerfile: Dockerfile
     volumes:
-      - /db/data/audio:/data/db
+      - ./db/data/audio:/data/db
     image: mongo
     ports:
-      - 27017:27017
+      - "27018:27017/tcp"
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: MusicLand
     
 
   auth_db:
     image: postgres:13.3
     ports: 
-      - 5433:5432
+      - "5433:5432/tcp"
     volumes:
       - ./db/data/auth:/var/lib/postgresql/data
       - ./db/init/auth:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
+    hostname: postgres

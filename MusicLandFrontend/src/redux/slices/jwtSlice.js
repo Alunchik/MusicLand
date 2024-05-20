@@ -13,6 +13,7 @@ function getCookie(name) {
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
+
 const jwtSlice = createSlice({
     name:'jwt',
     initialState: {
@@ -56,6 +57,7 @@ const jwtSlice = createSlice({
         state.jwt=action.payload.jwt
         state.isAuth=true
         state.role=action.payload.role
+        console.log(action.payload.role + " role")
         state.loadingStatus = 'idle';
         state.error = null;
       })
@@ -74,12 +76,22 @@ async() =>
   const jwt = getCookie("token")
   const decrypt = jwtDecode(jwt)
   const login = decrypt.Login
-  const res = await axios.get("http://localhost:8087/getUserByLogin", {
+  const res = await axios.get("http://87.242.103.128:8087/getUserByLogin", {
     params: {"login": login},
     headers: {
       "Content-type": "application/json",
+      "Authorization": jwt,
     },
-  })
+  }).then(res =>{
+    console.log(res.data.role + "rrr")
+    if(res.data.role === "admin"){
+      console.log("adm")
+      var cookie_date = new Date();
+      cookie_date.setMonth(cookie_date.getMonth() + 1);
+    document.cookie = "isAdmin=yes;expires=" + cookie_date.toUTCString();
+    }
+ return res;
+    });
     return{
       jwt: jwt,
       name:res.data.name,

@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addMessage} from '../redux/slices/messagesSlice';
 const WebSocketElem = () =>{
 
-  const socket = new WebSocket('ws://localhost:8089/audio');
+  const socket = new WebSocket('ws://87.242.103.128:8089/audio');
   socket.binaryType = "arraybuffer"
 
   const dispatch = useDispatch()

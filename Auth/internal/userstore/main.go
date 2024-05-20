@@ -4,12 +4,12 @@ import (
 	"os"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 )
 
 // User модель пользователя
 type User struct {
-	Id       int    `json:"id"`
-	Login    string `json:"login"`
+	Login    string `json:"login" gorm:"primaryKey"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
@@ -21,55 +21,53 @@ type UserStore struct {
 
 func New() *UserStore {
 	us := &UserStore{}
-	dsn := "host=" + os.Getenv("DB_HOST") + " user=" + os.Getenv("DB_USER") + " dbname=" + os.Getenv("DB_NAME") + " password=" + os.Getenv("DB_PASSWORD") + " sslmode=disable"
+	dsn := "host=" + os.Getenv("DB_HOST") + " port=" + os.Getenv("DB_PORT") + " user=" + os.Getenv("DB_USER") + " dbname=" + os.Getenv("DB_NAME") + " password=" + os.Getenv("DB_PASSWORD") + " sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	us.db = db
 	db.Debug().AutoMigrate(&User{})
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	return us
 }
 
-func (ss *UserStore) CreateUser(user User) int {
-	result := ss.db.Create(&user)
+func (us *UserStore) CreateUser(user User) string {
+	result := us.db.Create(&user)
 	if result.Error != nil {
-		panic(result.Error)
+		log.Println(result.Error)
 	}
-	return user.Id
+	return user.Login
 }
 
-func (ss *UserStore) DeleteUserById(id int) int {
+func (us *UserStore) DeleteUserById(id int) string {
 	user := User{}
-	ss.db.Delete(&user, id)
-	//result := db.Where("ID := ?", id).Delete(&Song)
-	return user.Id
+	us.db.Delete(&user, id)
+	//result := db.Where("login := ?", id).Delete(&Song)
+	return user.Login
 }
-
-func (ss *UserStore) GetAllUsers() []User 
-
+func (us *UserStore) GetAllUsers() []User {
 	var users []User
-	result := ss.db.Find(&users)
+	result := us.db.Find(&users)
 	if result.Error != nil {
-		panic(result.Error)
+		log.Println(result.Error)
 	}
 	return users
 }
 
-func (ss *UserStore) GetUsersByName(userName string) []User {
+func (us *UserStore) GetUsersByName(userName string) []User {
 	var users []User
-	result := ss.db.Where("name = ?", userName).Find(&users)
+	result := us.db.Where("name = ?", userName).Find(&users)
 	if result.Error != nil {
-		panic(result.Error)
+		log.Println(result.Error)
 	}
 	return users
 }
 
-func (ss *UserStore) GetUsersByLogin(userName string) []User{
+func (us *UserStore) GetUsersByLogin(userName string) []User{
 	var users []User
-	result := ss.db.Where("login = ?", userName).Find(&users)
+	result := us.db.Where("login = ?", userName).Find(&users)
 	if result.Error != nil {
-		panic(result.Error)
+		log.Println(result.Error)
 	}
 	return users;
 }

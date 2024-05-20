@@ -75,7 +75,7 @@ func (ss *SongServer) DeleteSongByIdHandler(w http.ResponseWriter, req *http.Req
 		log.Printf("handling delete song at %s with ID %s\n", req.URL.Path, idstr)
 		id, e := strconv.Atoi(idstr)
 		if(e!=nil) {
-			panic(e)
+			http.Error(w, e.Error(), http.StatusBadRequest)
 		}
 		res := ss.service.DeleteSongById(id)
 		config.RenderJSON(w, res)

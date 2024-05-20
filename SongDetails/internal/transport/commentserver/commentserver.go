@@ -67,18 +67,18 @@ func (ss *CommentServer) GetAllCommentsHandler(w http.ResponseWriter, req *http.
 		log.Printf("handling get comments at %s with name %s\n", req.URL.Path, songId)
 		id, e := strconv.Atoi(songId)
 		if(e!=nil) {
-			panic(e)
+			http.Error(w, e.Error(), http.StatusBadRequest)
 		}
 		comment := ss.service.GetCommentsBySongId(id)
 		config.RenderJSON(w, comment)
 	}
 
 func (ss *CommentServer) DeleteCommentByIdHandler(w http.ResponseWriter, req *http.Request) {
-	idstr := req.URL.Query().Get("id")
+		idstr := req.URL.Query().Get("id")
 		log.Printf("handling delete comment at %s with ID %s\n", req.URL.Path, idstr)
 		id, e := strconv.Atoi(idstr)
 		if(e!=nil) {
-			panic(e)
+			http.Error(w, e.Error(), http.StatusBadRequest)
 		}
 		res := ss.service.DeleteCommentById(id)
 		config.RenderJSON(w, res)

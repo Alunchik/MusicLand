@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie'
+import Admin from '../pages/Admin';
 
 
 const PageRoute = () => {
@@ -25,6 +26,7 @@ const PageRoute = () => {
     <Route path = "/registration" element={hasCookie('token') ? <Navigate to="/"/> : <Registration/>} ></Route>
     <Route path = "/addSong" element={hasCookie('token') ? <AddSong/> : <Navigate to="/login"/>} ></Route>
     <Route path = "/me" element={hasCookie('token') ? <UserDetails/> : <Navigate to="/login"/>} ></Route>
+    <Route path = "/admin" element={hasCookie('isAdmin') ? <Admin/> : <Navigate to="/"/>} ></Route>
     <Route path = "/login" element={<Login/>} ></Route>
 </Routes>
         </div>

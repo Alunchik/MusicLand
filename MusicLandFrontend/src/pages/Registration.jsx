@@ -17,7 +17,7 @@ const Registration = () => {
         "name":name
       }
       console.log(data)
-        axios.post("http://localhost:8087/register", data, {
+        axios.post("http://87.242.103.128:8087/register", data, {
           headers: {
             "Content-type": "application/json",
           },

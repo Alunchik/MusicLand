@@ -1,16 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import getCookie from "../../util/getcookie";
 
-import io from 'socket.io-client';
 
-
-const url = "localhost:8088"
-function getCookie(name) {
-  var matches = document.cookie.match(new RegExp(
-    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-  ));
-  return matches ? decodeURIComponent(matches[1]) : undefined;
-}
 const songsSlice = createSlice({
     name:'songs',
     initialState: {
@@ -42,8 +34,7 @@ const songsSlice = createSlice({
             state.songs = action.payload
           })
           .addCase(deleteSong.fulfilled, (state, action) => {
-            state.status = 'succeeded'
-            // TODO: Delete the song from array
+            state.status.songs.splice(state.status.songs.indexOf(action.payload) , 1)
           })
       }
 });
@@ -51,31 +42,47 @@ const songsSlice = createSlice({
 export const selectAllSongs = state => state.songs.songs;
 
 export const fetchSongs = createAsyncThunk('songs/fetchSongs', async () => {
-  const response = await axios.get('http://localhost:8088/songs', {
+  const response = await axios.get('http://87.242.103.128:8088/songs', {
     mode: 'no-cors',
    });
    console.log(response)
    return response.data
 });
 
-export const deleteSong = createAsyncThunk('songs/deleteSong', async () => {
-  const response = await axios.delete('http://localhost:8088/songs', {
-    mode: 'no-cors',
-   }).then((res) => {
-    axios.delete('http://localhost:8089/delete', {
+export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, AudioId}) => {
+  console.log("id audio: " + AudioId)
+  console.log("id : " + id)
+  const response = await axios.delete('http://87.242.103.128:8088/admin/songs', {
+    mode: 'no-cors',  
+  headers: {
+      "Authorization": getCookie("token"),
+      "Access-Control-Allow-Origin": "*",
+    }, params: {
+      id:id
+    }
+     })
+   .then((res) => {
+    axios.delete('http://87.242.103.128:8089/admin/delete', {
       headers: {
-        "Authorization": getCookie("token")
+        "Authorization": getCookie("token"),
+        "Access-Control-Allow-Origin": "*",
+      },
+      params: {
+        id: AudioId
       }
+   }).catch (err => {
+    console.log(err)
    })
-   })
-   return response.data
+   });
+   document.location.reload()
+   return 
 });
 
 export default songsSlice.reducer;
 
 
 export const fetchSongsByUser = createAsyncThunk('songs/fetchSongsByUser', async (login) => {
-  const response = await axios.get('http://localhost:8088/songs/byUser', {
+  const response = await axios.get('http://87.242.103.128:8088/songs/byUser', {
     mode: 'no-cors',
    });
    console.log(response)

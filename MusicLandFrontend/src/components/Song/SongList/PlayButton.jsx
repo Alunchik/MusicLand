@@ -19,7 +19,7 @@ const PlayButton = (props) => {
     const id = props.id;
       const startSocket = () => {
         console.log(id)
-       const socket = new WebSocket('ws://localhost:8089/audio')
+       const socket = new WebSocket('ws://87.242.103.128:8089/audio')
        socket.binaryType = "arraybuffer"
           socket.onopen = (event) => {
               console.log("socket opened ");

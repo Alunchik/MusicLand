@@ -9,12 +9,11 @@ import(
     "go.mongodb.org/mongo-driver/mongo/options"
     "github.com/rs/cors"
     "github.com/gorilla/mux"
-    "go.mongodb.org/mongo-driver/bson"
+    // "go.mongodb.org/mongo-driver/bson"
 	"log"
     "io"
-    "errors"
+    // "errors"
     "github.com/dgrijalva/jwt-go"
-    "fmt"
     //"strconv"
     "strings"
 	"encoding/json"
@@ -99,13 +98,13 @@ func ConnectDB() *mongo.Client {
     uri := EnvMongoURI()
     client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
     if err != nil {
-        log.Fatal("Error: " + err.Error())
+        log.Println("Error: " + err.Error())
     }
 
     //ping the database
     err = client.Ping(ctx, nil)
     if err != nil {
-        log.Fatal("Error: " + err.Error())
+        log.Println("Error: " + err.Error())
     }
     log.Println("Connected to MongoDB")
     return client
@@ -129,37 +128,37 @@ func DeleteSong(id string, isAdmin bool, login string) error {
         return err
     }
     //проверяем, можно ли данному пользователю удалять песню (он ли ее загрузил)
-    if(isAdmin == false){
-        fileID := bson.M{"_id": id}
-        cursor, err := bucket.Find(fileID)
-        if err != nil {
-         return err
-        }
-        defer func() {
-            if err := cursor.Close(context.TODO()); err != nil {
-                log.Fatal(err)
-            }
-        }()
-        type gridfsFile struct {
-            Name   string `bson:"filename"`
-            Length int64  `bson:"length"`
-        }
-        var foundFiles []gridfsFile
-        if err = cursor.All(context.TODO(), &foundFiles); err != nil {
-            log.Fatal(err)
-        }
+    // if(isAdmin == false){
+    //     fileID := bson.M{"_id": id}
+    //     cursor, err := bucket.Find(fileID)
+    //     if err != nil {
+    //      return err
+    //     }
+    //     defer func() {
+    //         if err := cursor.Close(context.TODO()); err != nil {
+    //             log.Println(err)
+    //         }
+    //     }()
+    //     type gridfsFile struct {
+    //         Name   string `bson:"filename"`
+    //         Length int64  `bson:"length"`
+    //     }
+    //     var foundFiles []gridfsFile
+    //     if err = cursor.All(context.TODO(), &foundFiles); err != nil {
+    //         log.Println(err)
+    //     }
         
-       // Извлечение имени файла из метаданных
-        filename := foundFiles[0].Name
+    //    // Извлечение имени файла из метаданных
+    //     filename := foundFiles[0].Name
 
-        substrings := strings.Split(filename, "_")
+    //     substrings := strings.Split(filename, "_")
 
-        author := substrings[1]
+    //     author := substrings[1]
 
-        if !(login == author) {
-            return errors.New("Attemt to delete song by user who is not author")
-        }
-       }
+    //     if !(login == author) {
+    //         return errors.New("Attemt to delete song by user who is not author")
+    //     }
+    //    }
 
     err = bucket.Delete(fileIDObj)
     if err != nil {
@@ -183,26 +182,26 @@ func adminDeleteSong(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
 }
 
-func userDeleteSong(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodOptions {
-        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
-        w.WriteHeader(http.StatusOK)
-        return
-    }
-    tokenString := r.Header.Get("Authorization")
-    token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-        return secretKey, nil
-		})
-    claims := token.Claims.(*CustomClaims)
-    login := claims.Login
-    id := r.URL.Query().Get("id")
-     err = DeleteSong(id, false, login)
-   if(err!=nil){
-    renderJSON(w, http.StatusInternalServerError, err.Error())
-    return
-   }
-    w.WriteHeader(http.StatusOK)
-}
+// func userDeleteSong(w http.ResponseWriter, r *http.Request) {
+//     if r.Method == http.MethodOptions {
+//         // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
+//     tokenString := r.Header.Get("Authorization")
+//     token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+//         return secretKey, nil
+// 		})
+//     claims := token.Claims.(*CustomClaims)
+//     login := claims.Login
+//     id := r.URL.Query().Get("id")
+//      err = DeleteSong(id, false, login)
+//    if(err!=nil){
+//     renderJSON(w, http.StatusInternalServerError, err.Error())
+//     return
+//    }
+//     w.WriteHeader(http.StatusOK)
+// }
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodOptions {
@@ -213,7 +212,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
         file, header, err := r.FormFile("audio")
         login:= r.URL.Query().Get("login")
         if err != nil {
-            log.Fatal("err reading file: ", err)
+            log.Println("err reading file: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -223,14 +222,14 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
             DB.Database("musicLand"), opt,
         )
         if err != nil {
-            log.Fatal("Erroc connecting: ", err)
+            log.Println("Erroc connecting: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
 
         buf := bytes.NewBuffer(nil)
         if _, err := io.Copy(buf, file); err != nil {
-            log.Fatal(err)
+            log.Println(err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -240,7 +239,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
             filename,
         )
         if err != nil {
-            log.Fatal("Error uploading to mongoDB: ", err)
+            log.Println("Error uploading to mongoDB: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -248,14 +247,14 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
         fileSize, err := uploadStream.Write(buf.Bytes())
         if err != nil {
-            log.Fatal(err)
+            log.Println(err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
 
         fileId, _ := json.Marshal(uploadStream.FileID)
         if err != nil {
-            log.Fatal(err)
+            log.Println(err)
             renderJSON(w, http.StatusBadRequest, err.Error())
             return
         }
@@ -284,7 +283,7 @@ func serveFile(w http.ResponseWriter, r *http.Request){
 
         objID, err := primitive.ObjectIDFromHex(string(audioId))
         if err != nil {
-            log.Fatal("Error getting ID: ", err)
+            log.Println("Error getting ID: ", err)
             return
         }
 
@@ -295,7 +294,7 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         var buf bytes.Buffer
         dStream, err := bucket.DownloadToStream(objID, &buf)
         if err != nil {
-            log.Fatal("Error downloading file: ", err)
+            log.Println("Error downloading file: ", err)
             return
         }
 
@@ -355,7 +354,7 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			fmt.Println("Authenticated user:", claims.Login)
+			log.Println("Authenticated user:", claims.Login)
 			next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
@@ -380,7 +379,7 @@ func adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && claims.Role=="admin"{
-			fmt.Println("Authenticated user:", claims.Login)
+			log.Println("Authenticated user:", claims.Login)
                 next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
@@ -392,13 +391,14 @@ func adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func StartServer() {
     r := mux.NewRouter()
     r.HandleFunc("/admin/delete", adminMiddleware(adminDeleteSong)).Methods(http.MethodDelete)
-    r.HandleFunc("/delete", authMiddleware(userDeleteSong)).Methods(http.MethodDelete)
+    // r.HandleFunc("/delete", authMiddleware(userDeleteSong)).Methods(http.MethodDelete)
 	r.HandleFunc("/upload", authMiddleware(uploadFile)).Methods(http.MethodPost)
     r.HandleFunc("/audio", serveFile).Methods(http.MethodGet)
 	http.HandleFunc("/", Websockethandler)
     c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
+        AllowedHeaders: []string{"*"},
 		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
 	})
 	handler := c.Handler(r)

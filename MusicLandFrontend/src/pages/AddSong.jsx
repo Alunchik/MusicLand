@@ -4,14 +4,18 @@ import WebSocketElem from "../components/AudioPlayer"
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import { Axios } from "axios"
-import { fetchSongs, selectAllSongs, startListening, sendMessage } from "../components/redux/slices/songsSlice"
+import { fetchSongs, selectAllSongs, startListening } from "../redux/slices/songsSlice"
 import axios from "axios"
 
-import { addUserDetails, addJwt, fetchWithJwt} from "../components/redux/slices/jwtSlice"
-
+import { fetchWithJwt } from "../redux/slices/jwtSlice"
 const AddSong = () => 
   {
-  
+    function getCookie(name) {
+      var matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+      ));
+      return matches ? decodeURIComponent(matches[1]) : undefined;
+    }
   const login = useSelector(state => state.jwt.login);
   const [result, setResult] = useState("");
   const dispatch = useDispatch();
@@ -22,9 +26,10 @@ const AddSong = () =>
       const fileData = new FormData();
             fileData.append('audio', file);
       axios
-        .post("http://localhost:8089/upload", fileData, {
+        .post("http://87.242.103.128:8089/upload", fileData, {
           headers: {
             "Content-type": "multipart/form-data",
+            "Authorization": getCookie("token")
           }, params: {
             "login" : login,
           }
@@ -32,14 +37,16 @@ const AddSong = () =>
         .then((res) => {
           var songId = res.data.fileId
           console.log(`Success: ` + songId);
-          axios.post("http://localhost:8088/songs",
+          axios.post("http://87.242.103.128:8088/songs",
           {"title":name, "audioId":songId, "artistId": login}, {
             headers: {
               "Content-type": "application/json",
+              "Authorization": getCookie("token")
             },
           }).then((res) =>{
             setResult("Success");
             event.target.form.reset();
+            document.location.reload()
         }).catch((err) => {
           setResult("Error - " + err.data);
         });

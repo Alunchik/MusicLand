@@ -1,12 +1,11 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import songsSlice from './slices/songsSlice';
-import messagesSlice from './slices/messagesSlice';
 import jwtSlice from './slices/jwtSlice';
+import commentsSlice from './slices/commentsSlice';
 export default configureStore({
   reducer: {
     songs: songsSlice,
-    messages: messagesSlice,
+    comments: commentsSlice,
     jwt: jwtSlice,
   },
 });

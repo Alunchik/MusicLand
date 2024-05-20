@@ -4,7 +4,7 @@ import Footer from './components/Footer'
 import { BrowserRouter } from 'react-router-dom';
 import './style/main.css'
 import { Provider } from 'react-redux';
-import store from './components/redux/store.js';
+import store from './redux/store.js';
 import PageRoute from './routes/PageRoute.jsx';
 
 

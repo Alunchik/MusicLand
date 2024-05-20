@@ -35,7 +35,8 @@ func main() {
 	r.HandleFunc("/admin/comments", config.AdminMiddleware(commentserver.DeleteCommentByIdHandler)).Methods(http.MethodDelete)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders: []string{"*"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "DELETE", "POST", "PUT"},
 	})
