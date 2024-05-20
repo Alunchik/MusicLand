@@ -3,7 +3,7 @@ package songstore
 import (
 	"gorm.io/gorm"
 	"os"
-	"musicland.com/songdetails/internal/model"
+	"musicland.com/songdetails/internal/model/song"
 
 	"gorm.io/driver/postgres"
 

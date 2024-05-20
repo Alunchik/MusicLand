@@ -3,10 +3,12 @@ import React, { useEffect } from 'react'
 import WebSocketElem from "../components/AudioPlayer"
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
-
+import { useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import axios from "axios"
 const Registration = () => {
-  const [err, setErr] = useState('')
+  const navigate=useNavigate();
+  const [err, setErr] = useState('');
     const OnSumbit = (event) => {
       event.preventDefault();
       const data = {
@@ -18,17 +20,17 @@ const Registration = () => {
         axios.post("http://localhost:8087/register", data, {
           headers: {
             "Content-type": "application/json",
-
           },
         })
         .then((res) => {
           console.log(res);
           console.log("SUCCESS")
-
+          setErr("Success");
+          navigate("/login");
     })
         .catch((err) => {
           console.log(err);
-          setErr(err.data)
+          setErr("Error - " + err.data)
         });
     };
 
@@ -53,6 +55,7 @@ const Registration = () => {
   return(
       <main>
       <form onSubmit={OnSumbit}>
+      <Link to="/login">Click to log in</Link>
         <label htmlFor="login">Login</label>
       <input type="login" name="login" id="login" onChange={handleChangeLogin} />
       <label htmlFor="name">Name</label>

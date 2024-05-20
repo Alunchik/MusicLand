@@ -1,36 +1,21 @@
 package songserver
-
-import (
-	"musicland.com/songdetails/internal/services"
+import(
+	"musicland.com/songdetails/internal/services/songservice"
+	"musicland.com/songdetails/internal/transport/config"
 	"encoding/json"
 	"log"
-	"mime"
-	"fmt"
 	"strconv"
 	"net/http"
-	"github.com/gorilla/mux"
+	"mime"
 )
 
 type SongServer struct {
 	service *songservice.SongService
 }
 
-func New() *SongServer {
+func NewSongServer() *SongServer {
 		service := songservice.New()
 		return &SongServer{service: service}
-}
-
-func renderJSON(w http.ResponseWriter, v interface{}) {
-	w.Header().Set("Content-Type", "text/html; charset=ascii")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
-	js, err := json.Marshal(v)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
 }
 
 func (ss *SongServer) CreateSongHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,53 +53,30 @@ func (ss *SongServer) CreateSongHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		id := ss.service.CreateSong(rs.Title, rs.ArtistId, rs.AudioId)
-		renderJSON(w, ResponseId{ID: id})
+		config.RenderJSON(w, ResponseId{ID: id})
 }
 
 func (ss *SongServer) GetAllSongsHandler(w http.ResponseWriter, req *http.Request) {
 		log.Printf("handling get all songs at %s\n", req.URL.Path)
 		allSongs := ss.service.GetAllSongs()
-		renderJSON(w, allSongs)
+		config.RenderJSON(w, allSongs)
 	}
 
-func CORS(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	
-			// Set headers
-			w.Header().Set("Access-Control-Allow-Headers:", "*")
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "*")
-	
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-
-			fmt.Println("ok")
-	
-			// Next
-			next.ServeHTTP(w, r)
-			return
-		})
-	}
-	
-
-func (ss *SongServer) GetSongByNameHandler(w http.ResponseWriter, req *http.Request) {
+	func (ss *SongServer) GetSongByNameHandler(w http.ResponseWriter, req *http.Request) {
 		title := req.URL.Query().Get("title")
 		log.Printf("handling get songs at %s with name %s\n", req.URL.Path, title)
 		song := ss.service.GetSongsByName(title)
-		renderJSON(w, song)
+		config.RenderJSON(w, song)
 	}
 
+
 func (ss *SongServer) DeleteSongByIdHandler(w http.ResponseWriter, req *http.Request) {
-		vars := mux.Vars(req)
-		paramId := vars["id"]
-		log.Printf("handling delete song at %s with ID %s\n", req.URL.Path, paramId)
-		id, e := strconv.Atoi(paramId)
+	idstr := req.URL.Query().Get("id")
+		log.Printf("handling delete song at %s with ID %s\n", req.URL.Path, idstr)
+		id, e := strconv.Atoi(idstr)
 		if(e!=nil) {
 			panic(e)
 		}
 		res := ss.service.DeleteSongById(id)
-		renderJSON(w, res)
+		config.RenderJSON(w, res)
 	}

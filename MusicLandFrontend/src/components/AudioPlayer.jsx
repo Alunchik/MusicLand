@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addMessage} from './redux/slices/messagesSlice';
+import { addMessage} from '../redux/slices/messagesSlice';
 const WebSocketElem = () =>{
 
   const socket = new WebSocket('ws://localhost:8089/audio');

@@ -33,10 +33,25 @@ type Credentials struct {
 
 // CustomClaims кастомные поля для JWT
 type CustomClaims struct {
-	Login string `json:"email"`
+	Login string `json:"login`
 	Role  string `json:"role"`
 	jwt.StandardClaims
 }
+
+func renderJSON(w http.ResponseWriter, status int, v interface{}) {
+	w.Header().Set("Content-Type", "text/html; charset=ascii")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
+	js, err := json.Marshal(v)
+	w.WriteHeader(status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 
 func hashPassword(password string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -47,7 +62,11 @@ func hashPassword(password string) string {
 }
 
 func (userserver *UserServer) registerHandler(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method == http.MethodOptions {
+        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+        w.WriteHeader(http.StatusOK)
+        return
+       }
 	var newUser userstore.User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
@@ -60,33 +79,28 @@ func (userserver *UserServer) registerHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusCreated)
 }
-
-func (userserver *UserServer) loginHandler(w http.ResponseWriter, r *http.Request) {
-	var creds Credentials
-	err := json.NewDecoder(r.Body).Decode(&creds)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+func (userserver *UserServer) getUserByLoginHandler(w http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodOptions {
+        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+        w.WriteHeader(http.StatusOK)
+        return
+       }
+	login := req.URL.Query().Get("login")
+	log.Printf("handling get user at %s with login %s\n", req.URL.Path, login)
+	users := userserver.store.GetUsersByLogin(login);
+	user := userstore.User{}
+	if(len(users)>0){
+		user = users[0]
 	}
+	renderJSON(w, 200, user);
+}
 
-	var user userstore.User
-	for _, u := range userserver.store.GetUsersByLogin(creds.Login) {
-		if  bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(creds.Password)) == nil {
-			user = u
-			break
-		}
-	}
 
-	if user.Id == 0 {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	// Создаем JWT
+func createJWT(login string, role string) string, error{
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := CustomClaims{
-		Login: user.Login,
-		Role:  user.Role,
+		Login: login,
+		Role:  role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -95,10 +109,30 @@ func (userserver *UserServer) loginHandler(w http.ResponseWriter, r *http.Reques
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func (userserver *UserServer) loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+	var creds Credentials
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		returnhttp.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	tokenString, err != Login(creds);
+	if(err!=nil) {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
 }
@@ -121,12 +155,28 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 			fmt.Println("Authenticated user:", claims.Login)
-			// Можно проверять роль пользователя и делать что-то на основе этой информации
 			next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 		}
 	}
+}
+
+func Login(creds Credentials) string, error{
+	var user userstore.User
+	for _, u := range userserver.store.GetUsersByLogin(creds.Login) {
+		if  bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(creds.Password)) == nil {
+			user = u
+			break
+		}
+	}
+
+	if user.Id == 0 {
+		return errors.New("Invalid credentials")
+	}
+	// Создаем JWT
+	tokenString := createJWT(user.Login, user.Role)
+	return tokenString
 }
 
 func main() {
@@ -139,6 +189,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/register", userserver.registerHandler)
 	r.HandleFunc("/login", userserver.loginHandler)
+	r.HandleFunc("/getUserByLogin", userserver.getUserByLoginHandler)
 	r.HandleFunc("/protected", authMiddleware(protectedHandler))
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -148,7 +199,7 @@ func main() {
 	handler := c.Handler(r)
 	fmt.Println("Server started at :8087")
 	http.ListenAndServe(":8087", handler)
-}
+}          
 
 func protectedHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Protected content"))

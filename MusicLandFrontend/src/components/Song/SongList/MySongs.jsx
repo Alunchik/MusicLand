@@ -2,7 +2,7 @@ import SongList from "../components/Song/SongList/SongList"
 import React, { useEffect } from 'react'
 import WebSocketElem from "../components/AudioPlayer"
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchSongs, selectAllSongs, startListening, sendMessage } from "../redux/slices/songsSlice"
+import { fetchSongs, selectAllSongs, startListening, sendMessage } from "../components/redux/slices/songsSlice"
 const Songs = () => {
 const dispatch = useDispatch()
   const songs = useSelector(selectAllSongs)

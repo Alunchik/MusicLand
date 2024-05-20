@@ -2,7 +2,6 @@ package userstore
 
 import (
 	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -47,14 +46,7 @@ func (ss *UserStore) DeleteUserById(id int) int {
 	return user.Id
 }
 
-func (ss *UserStore) GetAllUsers() []User {
-	//ss.Lock()
-	//defer ss.Unlock()
-
-	//allSongs := make([]Song, 0, len(ss.songs))
-	// for _, song := range ss.songs {
-	// 	allSongs = append(allSongs, song)
-	// }
+func (ss *UserStore) GetAllUsers() []User 
 
 	var users []User
 	result := ss.db.Find(&users)
@@ -65,9 +57,6 @@ func (ss *UserStore) GetAllUsers() []User {
 }
 
 func (ss *UserStore) GetUsersByName(userName string) []User {
-	//ss.Lock()
-	//defer ss.Unlock()
-
 	var users []User
 	result := ss.db.Where("name = ?", userName).Find(&users)
 	if result.Error != nil {
@@ -76,14 +65,11 @@ func (ss *UserStore) GetUsersByName(userName string) []User {
 	return users
 }
 
-func (ss *UserStore) GetUsersByLogin(userName string) []User {
-	//ss.Lock()
-	//defer ss.Unlock()
-
+func (ss *UserStore) GetUsersByLogin(userName string) []User{
 	var users []User
 	result := ss.db.Where("login = ?", userName).Find(&users)
 	if result.Error != nil {
 		panic(result.Error)
 	}
-	return users
+	return users;
 }

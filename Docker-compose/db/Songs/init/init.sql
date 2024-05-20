@@ -1,8 +1,8 @@
 -- Database: MusicLand
 
--- DROP DATABASE IF EXISTS "MusicLand";
+-- DROP DATABASE IF EXISTS "songdetails";
 
-CREATE DATABASE "MusicLand"
+CREATE DATABASE "songdetails"
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'

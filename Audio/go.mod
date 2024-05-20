@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/braheezy/shine-mp3 v0.1.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-audio/audio v1.0.0
 	github.com/go-audio/wav v1.1.0
 	github.com/gorilla/mux v1.8.1

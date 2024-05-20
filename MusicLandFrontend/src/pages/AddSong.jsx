@@ -5,38 +5,47 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import { Axios } from "axios"
 import { fetchSongs, selectAllSongs, startListening, sendMessage } from "../components/redux/slices/songsSlice"
-
 import axios from "axios"
-const AddSong = () => {
-    const OnSumbit = (event) => {
-      event.preventDefault();
-      const formData = new FormData(event.target.form);
-      const fileData = new FormData();
-      console.log(formData)
-      fileData.append('audio', file);
+
+import { addUserDetails, addJwt, fetchWithJwt} from "../components/redux/slices/jwtSlice"
+
+const AddSong = () => 
+  {
   
+  const login = useSelector(state => state.jwt.login);
+  const [result, setResult] = useState("");
+  const dispatch = useDispatch();
+  const OnSumbit = (event) => {
+      event.preventDefault();
+      dispatch(fetchWithJwt())
+      console.log(login)
+      const fileData = new FormData();
+            fileData.append('audio', file);
       axios
         .post("http://localhost:8089/upload", fileData, {
           headers: {
             "Content-type": "multipart/form-data",
-          },
+          }, params: {
+            "login" : login,
+          }
         })
         .then((res) => {
           var songId = res.data.fileId
           console.log(`Success: ` + songId);
           axios.post("http://localhost:8088/songs",
-          {"title":name, "audioId":songId}, {
+          {"title":name, "audioId":songId, "artistId": login}, {
             headers: {
               "Content-type": "application/json",
             },
           }).then((res) =>{
-          console.log(`Success:!!!!`);
+            setResult("Success");
+            event.target.form.reset();
         }).catch((err) => {
-          console.log("AAA", err);
+          setResult("Error - " + err.data);
         });
     })
         .catch((err) => {
-          console.log(err);
+          setResult("Error - " + err.data);
         });
     };
 
@@ -65,6 +74,7 @@ const AddSong = () => {
       />
       <input type="text" onChange={handleChangeName} />
       <button></button>
+      <div>{result}</div>
     </form>
         </main>
     );

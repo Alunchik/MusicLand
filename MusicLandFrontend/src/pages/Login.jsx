@@ -5,49 +5,46 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import { Axios } from "axios"
 import { Link } from "react-router-dom"
-import { addJwt} from '../components/redux/slices/jwtSlice';
+import { addJwt, addUserDetails, fetchWithJwt} from '../components/redux/slices/jwtSlice';
 import { fetchSongs, selectAllSongs, startListening, sendMessage } from "../components/redux/slices/songsSlice"
-
 import axios from "axios"
+import { useCookies } from 'react-cookie'
+import { useNavigate } from "react-router-dom"
 const Login = () => {
-
-  axios.defaults.headers.common = {
-    ...axios.defaults.headers.common,
-    'Access-Control-Allow-Origin': 'http://localhost:3000',
-    "Content-Type": 'application/json',
- };
- axios.defaults.preflightContinue = true;
- //axios.defaults.crossDomain = true;
-
-  const authStatus = useSelector(state => state.jwt.status);
+  function hasCookie(name) {
+    return document.cookie.split(';').some(c => c.trim().startsWith(name + '='));
+  }
+  const authStatus = useSelector(state => state.jwt.auth);
   const dispatch = useDispatch();
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [err, setErr] = useState('');
+  const navigate=useNavigate();
     const OnSumbit = (event) => {
       event.preventDefault();
       const data = {
         "login": name,
         "password":password,
       }
-        axios.post("http://localhost:8087/login", data, {
-          crossDomain : true,
+      console.log(data);
+        axios.post('http://localhost:8087/login', data, {
           headers: {
             "Content-type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods":"*"
           },
         })
         .then((res) => {
-          console.log(res);
-          dispatch(addJwt({ jwt: res.data }));
-          console.log(authStatus)
+          //dispatch(fetchWithJwt({ jwt: res.data.token }));
+          setCookie("token", res.data.token, {sameSite:"None"})
+          setCookie("login", res.data.token, {sameSite:"None"})
+          console.log("kooo" + cookies.token)
+          console.log(hasCookie("token"))
+          navigate("/");
+          document.location.reload();
     })
         .catch((err) => {
-          console.log("EEEEEEEER" + err.data);
-
+          console.log("Error" + err.data);
+          setErr("Error - " + err.data)
         });
     };
-
-   
-
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
 
@@ -69,6 +66,7 @@ const Login = () => {
 
       <input type="password" id="password" onChange={handleChangePassword} />
       <button>Login</button>
+      <div>{err}</div>
     </form>
         </main>
     );

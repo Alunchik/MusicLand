@@ -9,4 +9,5 @@
 MusicLandFrontend/node_modules/
 .idea/
 /gi
-/db_data/
+/Docker-compose/db/db/data/
+go.sum

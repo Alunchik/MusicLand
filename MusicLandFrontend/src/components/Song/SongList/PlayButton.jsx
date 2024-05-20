@@ -74,13 +74,13 @@ const PlayButton = (props) => {
       const notSupportedMsg =
       "Your browser does not support the <code>audio</code> element.";
       return(
-        <>
-          {/* {(
-            <div className={"audio-btn " + playing ? "play-btn" : "pause-btn"} onClick={togglePlaying}></div>
-          )} */}
+          // {/* {(
+          //   <div className={"audio-btn " + playing ? "play-btn" : "pause-btn"} onClick={togglePlaying}></div>
+          // )} */}
           <div className={"audio-btn play-btn"} onClick={startSocket}></div>
-        </>
+
       )
   }
+  
   
 export default PlayButton

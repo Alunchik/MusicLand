@@ -9,8 +9,12 @@ import(
     "go.mongodb.org/mongo-driver/mongo/options"
     "github.com/rs/cors"
     "github.com/gorilla/mux"
+    "go.mongodb.org/mongo-driver/bson"
 	"log"
     "io"
+    "errors"
+    "github.com/dgrijalva/jwt-go"
+    "fmt"
     //"strconv"
     "strings"
 	"encoding/json"
@@ -23,6 +27,9 @@ import(
 	//"github.com/go-audio/wav"
 )
 
+var (
+	secretKey = []byte("kekukallw")
+)
 var upgrader = websocket.Upgrader{
     ReadBufferSize:  1024,
     WriteBufferSize: 1024,
@@ -110,6 +117,93 @@ func GetCollection(client *mongo.Client, collectionName string) *mongo.Collectio
     return collection
 }
 
+func DeleteSong(id string, isAdmin bool, login string) error {
+    fileIDObj, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return err
+    }
+    bucket, err := gridfs.NewBucket(
+        DB.Database("musicLand"), opt,
+    )
+    if err != nil {
+        return err
+    }
+    //проверяем, можно ли данному пользователю удалять песню (он ли ее загрузил)
+    if(isAdmin == false){
+        fileID := bson.M{"_id": id}
+        cursor, err := bucket.Find(fileID)
+        if err != nil {
+         return err
+        }
+        defer func() {
+            if err := cursor.Close(context.TODO()); err != nil {
+                log.Fatal(err)
+            }
+        }()
+        type gridfsFile struct {
+            Name   string `bson:"filename"`
+            Length int64  `bson:"length"`
+        }
+        var foundFiles []gridfsFile
+        if err = cursor.All(context.TODO(), &foundFiles); err != nil {
+            log.Fatal(err)
+        }
+        
+       // Извлечение имени файла из метаданных
+        filename := foundFiles[0].Name
+
+        substrings := strings.Split(filename, "_")
+
+        author := substrings[1]
+
+        if !(login == author) {
+            return errors.New("Attemt to delete song by user who is not author")
+        }
+       }
+
+    err = bucket.Delete(fileIDObj)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func adminDeleteSong(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodOptions {
+        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+    id := r.URL.Query().Get("id")
+   err := DeleteSong(id, true, "")
+   if(err!=nil){
+    renderJSON(w, http.StatusInternalServerError, err.Error())
+    return
+   }
+    w.WriteHeader(http.StatusOK)
+}
+
+func userDeleteSong(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodOptions {
+        // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+    tokenString := r.Header.Get("Authorization")
+    token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+        return secretKey, nil
+		})
+    claims := token.Claims.(*CustomClaims)
+    login := claims.Login
+    id := r.URL.Query().Get("id")
+     err = DeleteSong(id, false, login)
+   if(err!=nil){
+    renderJSON(w, http.StatusInternalServerError, err.Error())
+    return
+   }
+    w.WriteHeader(http.StatusOK)
+}
+
 func uploadFile(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodOptions {
         // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
@@ -117,6 +211,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
         return
        }
         file, header, err := r.FormFile("audio")
+        login:= r.URL.Query().Get("login")
         if err != nil {
             log.Fatal("err reading file: ", err)
             renderJSON(w, http.StatusBadRequest, err.Error())
@@ -140,7 +235,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        filename := time.Now().Format(time.RFC3339) + "_" + header.Filename
+        filename := time.Now().Format(time.RFC3339) + "_" + login + "_" + header.Filename
         uploadStream, err := bucket.OpenUploadStream(
             filename,
         )
@@ -189,7 +284,7 @@ func serveFile(w http.ResponseWriter, r *http.Request){
 
         objID, err := primitive.ObjectIDFromHex(string(audioId))
         if err != nil {
-            log.Fatal("343", err)
+            log.Fatal("Error getting ID: ", err)
             return
         }
 
@@ -200,7 +295,7 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         var buf bytes.Buffer
         dStream, err := bucket.DownloadToStream(objID, &buf)
         if err != nil {
-            log.Fatal(err)
+            log.Fatal("Error downloading file: ", err)
             return
         }
 
@@ -232,11 +327,73 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
 
 }
+type CustomClaims struct {
+	Login string `json:"login`
+	Role  string `json:"role"`
+	jwt.StandardClaims
+}
+
+func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == http.MethodOptions {
+            // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        tokenString := r.Header.Get("Authorization")
+		if tokenString == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return secretKey, nil
+		})
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+			fmt.Println("Authenticated user:", claims.Login)
+			next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		}
+	}
+}
+
+func adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get("Authorization")
+		if tokenString == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return secretKey, nil
+		})
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && claims.Role=="admin"{
+			fmt.Println("Authenticated user:", claims.Login)
+                next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		}
+	}
+}
 
 
 func StartServer() {
     r := mux.NewRouter()
-	r.HandleFunc("/upload", uploadFile).Methods(http.MethodPost)
+    r.HandleFunc("/admin/delete", adminMiddleware(adminDeleteSong)).Methods(http.MethodDelete)
+    r.HandleFunc("/delete", authMiddleware(userDeleteSong)).Methods(http.MethodDelete)
+	r.HandleFunc("/upload", authMiddleware(uploadFile)).Methods(http.MethodPost)
     r.HandleFunc("/audio", serveFile).Methods(http.MethodGet)
 	http.HandleFunc("/", Websockethandler)
     c := cors.New(cors.Options{

@@ -12,13 +12,24 @@
     color: aquamarine;
   }
   
+  .songLine{
+    display: flex;
+  }
   .songElement{
     background-color: palevioletred;
     display: flex;
     border-radius: 10px;
     margin-right: 30px;
-  }
+    justify-content: space-between;
 
+
+  }
+  .deleteButton{
+    border-radius: 10px;
+    float: right;
+    align-self: flex-end;
+    cursor: pointer;
+  }
   /* .btn {
     cursor: pointer;
     background-repeat: no-repeat;

@@ -1,5 +1,5 @@
 
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, redirect } from 'react-router-dom';
 
 import React  from 'react';
 
@@ -9,32 +9,23 @@ import Login from '../pages/Login';
 import AddSong from '../pages/AddSong';
 import UserDetails from '../pages/UserDetails';
 import { useSelector } from 'react-redux';
-
+import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie'
 
 
 const PageRoute = () => {
-
-    const authStatus = useSelector(state => state.jwt.status);
-
-    const isAuth = () => {
-        console.log(authStatus)
-        return  (authStatus === "auth")
-    }
-
-function protect(elem) { 
-        return isAuth ? elem : <Login/>
-}
-function onlyUnauth(elem) {
-    return !isAuth ? elem : <></>
-}
-
+    function hasCookie(name) {
+        return document.cookie.split(';').some(c => c.trim().startsWith(name + '='));
+      }
     return (
         <div>
 <Routes>
-    <Route path = "/" element={protect(<Songs/>)}></Route>
-    <Route path = "/registration" element={onlyUnauth(<Registration/>)}></Route>
-    <Route path = "/addSong" element={protect(<AddSong/>)}></Route>
-    <Route path = "/me" element={protect(<UserDetails/>)}></Route>
+    <Route path = "/" element={hasCookie('token') ? <Songs/> : <Navigate to="/login"/>}></Route>
+    <Route path = "/registration" element={hasCookie('token') ? <Navigate to="/"/> : <Registration/>} ></Route>
+    <Route path = "/addSong" element={hasCookie('token') ? <AddSong/> : <Navigate to="/login"/>} ></Route>
+    <Route path = "/me" element={hasCookie('token') ? <UserDetails/> : <Navigate to="/login"/>} ></Route>
+    <Route path = "/login" element={<Login/>} ></Route>
 </Routes>
         </div>
     );
