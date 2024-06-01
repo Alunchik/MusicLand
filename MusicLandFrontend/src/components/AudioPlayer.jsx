@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 const WebSocketElem = () =>{
 
-  const socket = new WebSocket('ws://87.242.103.128:8089/audio');
+  const socket = new WebSocket( process.env.REACT_APP_API_URL +  ':8089/audio');
   socket.binaryType = "arraybuffer"
 
   const dispatch = useDispatch()

@@ -26,7 +26,7 @@ const AddSong = () =>
       const fileData = new FormData();
             fileData.append('audio', file);
       axios
-        .post("http://87.242.103.128:8089/upload", fileData, {
+        .post(process.env.REACT_APP_API_URL + ":8089/upload", fileData, {
           headers: {
             "Content-type": "multipart/form-data",
             "Authorization": getCookie("token")
@@ -37,7 +37,7 @@ const AddSong = () =>
         .then((res) => {
           var songId = res.data.fileId
           console.log(`Success: ` + songId);
-          axios.post("http://87.242.103.128:8088/songs",
+          axios.post( process.env.REACT_APP_API_URL +  ":8088/songs",
           {"title":name, "audioId":songId, "artistId": login}, {
             headers: {
               "Content-type": "application/json",

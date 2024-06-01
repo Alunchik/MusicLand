@@ -76,7 +76,7 @@ async() =>
   const jwt = getCookie("token")
   const decrypt = jwtDecode(jwt)
   const login = decrypt.Login
-  const res = await axios.get("http://87.242.103.128:8087/getUserByLogin", {
+  const res = await axios.get( process.env.REACT_APP_API_URL + ":8087/getUserByLogin", {
     params: {"login": login},
     headers: {
       "Content-type": "application/json",

@@ -2,57 +2,23 @@ package main
 
 import(
 	"github.com/gorilla/websocket"
-    //"github.com/joho/godotenv"
+    "github.com/go-audio/wav"
     "go.mongodb.org/mongo-driver/bson/primitive"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/gridfs"
     "go.mongodb.org/mongo-driver/mongo/options"
+    // "github.com/go-audio/audio"
     "github.com/rs/cors"
     "github.com/gorilla/mux"
-    // "go.mongodb.org/mongo-driver/bson"
 	"log"
     "io"
-    // "errors"
-    "github.com/dgrijalva/jwt-go"
-    //"strconv"
     "strings"
 	"encoding/json"
-	//"os"
 	"net/http"
     "bytes"
 	"time"
 	"context"
-    //"github.com/go-audio/audio"
-	//"github.com/go-audio/wav"
 )
-
-var (
-	secretKey = []byte("kekukallw")
-)
-var upgrader = websocket.Upgrader{
-    ReadBufferSize:  1024,
-    WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-        return true
-    },
-}
-
-
-func renderJSON(w http.ResponseWriter, status int, v interface{}) {
-	w.Header().Set("Content-Type", "text/html; charset=ascii")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers","Content-Type,access-control-allow-origin, access-control-allow-headers")
-	js, err := json.Marshal(v)
-	w.WriteHeader(status)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
-}
-
-
 
 func messageHandler(conn *websocket.Conn, p []byte, messageType int) {
 	var resp = string(p) + "!!!"
@@ -263,9 +229,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 
 func serveFile(w http.ResponseWriter, r *http.Request){
-        //audioIdaudioId := strings.TrimPrefix(r.URL.Path, "/audio/")
-        //audioId := r.URL.Query().Get("id")
-        
+
         conn, err := upgrader.Upgrade(w, r, nil)
         if err != nil {
             log.Println("Error upgrading websocket connection:", err)
@@ -279,8 +243,6 @@ func serveFile(w http.ResponseWriter, r *http.Request){
             return
         }
         
-        log.Println(string(audioId))
-
         objID, err := primitive.ObjectIDFromHex(string(audioId))
         if err != nil {
             log.Println("Error getting ID: ", err)
@@ -290,109 +252,92 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         bucket, _ := gridfs.NewBucket(
             DB.Database("musicLand"), opt,
         )
-
         var buf bytes.Buffer
-        dStream, err := bucket.DownloadToStream(objID, &buf)
+
+        _, err = bucket.DownloadToStream(objID, &buf)
         if err != nil {
             log.Println("Error downloading file: ", err)
             return
         }
 
-        // Читаем и отправляем аудиоданные вебсокетом
-    // var chunkSize = 10240
+    reader := bytes.NewReader(buf.Bytes())
 
-    // audioBytes := buf.Bytes()
-    	// Переменная для отслеживания позиции в исходном массиве байт
-	// position := 0
-
-	// // Читаем данные по частям из исходного массива и сохраняем их в массив байт ограниченного размера
+    d := wav.NewDecoder(reader)
+    PCMbuf, err := d.FullPCMBuffer()
+    if err != nil {
+	    panic(err)
+    }
+    out := &BufWriter{}
+    // Читаем и отправляем аудиоданные вебсокетом
+   // var chunkSize = 1024
+    // audioBytes := PCMbuf.Data;
+            // chunkBuf := &audio.IntBuffer{}
+        // chunkBuf.Format=PCMbuf.Format
+        // chunkBuf.SourceBitDepth = PCMbuf.SourceBitDepth
+        // chunkBuf.Data = chunk
+    // Переменная для отслеживания позиции в исходном массиве байт
+	//position := 0
+    e := wav.NewEncoder(out,
+        PCMbuf.Format.SampleRate,
+        int(d.BitDepth),
+        PCMbuf.Format.NumChannels,
+        int(d.WavAudioFormat))
+    if err = e.Write(PCMbuf); err != nil {
+        log.Println(err)
+    }
+    log.Println(buf.Bytes()[:20])
+    log.Println(out.buf.Bytes()[:20])
+       err = conn.WriteMessage(websocket.BinaryMessage, out.buf.Bytes())
+	// Читаем данные по частям из исходного массива и сохраняем их в массив байт ограниченного размера
 	// for position < len(audioBytes) {
 	// 	bytesToRead := len(audioBytes) - position
 	// 	if bytesToRead > chunkSize {
 	// 		bytesToRead = chunkSize
 	// 	}
 
-    //     chunk := make([]byte, bytesToRead)
+    //     chunk := make([]int, bytesToRead)
 
+    //     copy(chunk, audioBytes[position:position+bytesToRead])
+
+    //     out := &BufWriter{}
+
+        // chunkBuf := &audio.IntBuffer{}
+        // chunkBuf.Format=PCMbuf.Format
+        // chunkBuf.SourceBitDepth = PCMbuf.SourceBitDepth
+        // chunkBuf.Data = chunk
+
+    //     e := wav.NewEncoder(out,
+    //         PCMbuf.Format.SampleRate,
+    //         int(d.BitDepth),
+    //         PCMbuf.Format.NumChannels,
+    //         int(d.WavAudioFormat))
+    //     if err = e.Write(chunkBuf); err != nil {
+    //         panic(err)
+    //     }
+
+    //    err = conn.WriteMessage(websocket.BinaryMessage, out.buf)
+    //    position+=chunkSize
+    // }
 
     //     err = conn.WriteMessage(websocket.BinaryMessage, encoded)
     //     if err != nil {
     //         log.Println("Error writing to websocket:", err)
     //         return
     //     }
-    //     position+=chunkSize
     // }
-        log.Printf("File size to download: %v\n", dStream)
-        err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
+        // log.Printf("File size to download: %v\n", dStream)
+        // err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
 
 }
-type CustomClaims struct {
-	Login string `json:"login`
-	Role  string `json:"role"`
-	jwt.StandardClaims
-}
 
-func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodOptions {
-            // Если это предварительный запрос OPTIONS - просто возвращаем разрешающие заголовки
-            w.WriteHeader(http.StatusOK)
-            return
-        }
-        tokenString := r.Header.Get("Authorization")
-		if tokenString == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return secretKey, nil
-		})
-		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			log.Println("Authenticated user:", claims.Login)
-			next.ServeHTTP(w, r)
-		} else {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-		}
-	}
-}
-
-func adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get("Authorization")
-		if tokenString == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return secretKey, nil
-		})
-		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid && claims.Role=="admin"{
-			log.Println("Authenticated user:", claims.Login)
-                next.ServeHTTP(w, r)
-		} else {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-		}
-	}
-}
 
 
 func StartServer() {
     r := mux.NewRouter()
-    r.HandleFunc("/admin/delete", adminMiddleware(adminDeleteSong)).Methods(http.MethodDelete)
+    r.HandleFunc("/admin/delete", AdminMiddleware(adminDeleteSong)).Methods(http.MethodDelete)
     // r.HandleFunc("/delete", authMiddleware(userDeleteSong)).Methods(http.MethodDelete)
-	r.HandleFunc("/upload", authMiddleware(uploadFile)).Methods(http.MethodPost)
+	r.HandleFunc("/upload", AuthMiddleware(uploadFile)).Methods(http.MethodPost)
     r.HandleFunc("/audio", serveFile).Methods(http.MethodGet)
 	http.HandleFunc("/", Websockethandler)
     c := cors.New(cors.Options{

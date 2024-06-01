@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Add files to app folder
 ADD . /app
-
+  
 RUN go get
 
 # Build the Go app

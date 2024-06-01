@@ -10,6 +10,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.1
 	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/orcaman/writerseeker v0.0.0-20200621085525-1d3f536ff85e
 	github.com/rs/cors v1.11.0
 	go.mongodb.org/mongo-driver v1.15.0
 )

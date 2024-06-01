@@ -11,3 +11,4 @@ MusicLandFrontend/node_modules/
 /gi
 /Docker-compose/db/db/data/
 go.sum
+.env

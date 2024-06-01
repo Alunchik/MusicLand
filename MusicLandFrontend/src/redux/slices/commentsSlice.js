@@ -47,7 +47,7 @@ const commentsSlice = createSlice({
 export const selectAllComments = state => state.comments.somments;
 
 export const fetchComments = createAsyncThunk('songs/fetchComments', async (songId) => {
-  const response = await axios.get('http://87.242.103.128:8088/comments', {
+  const response = await axios.get(process.env.REACT_APP_API_URL + ':8088/comments', {
     mode: 'no-cors',
     params: {
       "songId": songId
@@ -58,7 +58,7 @@ export const fetchComments = createAsyncThunk('songs/fetchComments', async (song
 });
 
 export const deleteComment = createAsyncThunk('scomments/deleteComment', async (id) => {
-  const response = await axios.delete('http://87.242.103.128:8088/comments', 
+  const response = await axios.delete(process.env.REACT_APP_API_URL + ':8088/comments', 
     {headers: {
       "Content-type": "application/json",
       "Authorization": getCookie("token")
@@ -74,7 +74,7 @@ export default commentsSlice.reducer;
 
 
 export const addComment = createAsyncThunk('comments/addComment', async (comment) => {
-  const response =  await axios.post("http://87.242.103.128localhost:8088/comments",
+  const response =  await axios.post( process.env.REACT_APP_API_URL + ":8088/comments",
   comment,
     {headers: {
       "Content-type": "application/json",

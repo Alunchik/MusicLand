@@ -42,7 +42,7 @@ const songsSlice = createSlice({
 export const selectAllSongs = state => state.songs.songs;
 
 export const fetchSongs = createAsyncThunk('songs/fetchSongs', async () => {
-  const response = await axios.get('http://87.242.103.128:8088/songs', {
+  const response = await axios.get(process.env.REACT_APP_API_URL + ':8088/songs', {
     mode: 'no-cors',
    });
    console.log(response)
@@ -52,7 +52,7 @@ export const fetchSongs = createAsyncThunk('songs/fetchSongs', async () => {
 export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, AudioId}) => {
   console.log("id audio: " + AudioId)
   console.log("id : " + id)
-  const response = await axios.delete('http://87.242.103.128:8088/admin/songs', {
+  const response = await axios.delete(process.env.REACT_APP_API_URL + ':8088/admin/songs', {
     mode: 'no-cors',  
   headers: {
       "Authorization": getCookie("token"),
@@ -62,7 +62,7 @@ export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, Audio
     }
      })
    .then((res) => {
-    axios.delete('http://87.242.103.128:8089/admin/delete', {
+    axios.delete(process.env.REACT_APP_API_URL + ':8089/admin/delete', {
       headers: {
         "Authorization": getCookie("token"),
         "Access-Control-Allow-Origin": "*",
@@ -82,7 +82,7 @@ export default songsSlice.reducer;
 
 
 export const fetchSongsByUser = createAsyncThunk('songs/fetchSongsByUser', async (login) => {
-  const response = await axios.get('http://87.242.103.128:8088/songs/byUser', {
+  const response = await axios.get( process.env.REACT_APP_API_URL + ':8088/songs/byUser', {
     mode: 'no-cors',
    });
    console.log(response)

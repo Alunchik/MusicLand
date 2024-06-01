@@ -28,7 +28,6 @@ const SongElement = (props) => {
             }
             </div>
             </div>
-            {console.log("a " + props.AudioID + " b " + props.id)}
             {hasCookie("isAdmin") ? DeleteButton({AudioId: props.AudioID, id: props.id}) : <></>}
             </div>
             <div>

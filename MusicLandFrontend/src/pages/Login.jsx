@@ -25,13 +25,13 @@ const Login = () => {
         "password":password,
       }
       console.log(data);
-        axios.post('http://87.242.103.128:8087/login', data, {
+      console.log(process.env.REACT_APP_API_URL + ':8087/login')
+        axios.post(process.env.REACT_APP_API_URL + ':8087/login', data, {
           headers: {
             "Content-type": "application/json",
           },
         })
         .then((res) => {
-          //dispatch(fetchWithJwt({ jwt: res.data.token }));
           var cookie_date = new Date();
           cookie_date.setMonth(cookie_date.getMonth() + 1);
         document.cookie = "token=" +  res.data.token + ";expires=" + cookie_date.toUTCString();
