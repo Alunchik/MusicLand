@@ -1,13 +1,13 @@
 @import "button.css";
 
 main{
-    min-height: 100vh;
+    min-height:100vh;
     background-color:darkgray;
     margin: 0px;
     padding: 0px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: start;
     align-items: center;
     
 }
@@ -15,17 +15,31 @@ main{
     margin: 10px;
 }
 button{
-    margin-bottom: 80px;
+    margin-block: 12px;
 }
 form{
     display: flex;
     flex-direction: column;
     justify-content: center;
-    margin: 20px;
-    justify-content: space-between;
+    margin: 10px;
+    justify-content: space-around;
     min-height: 300px;
     max-width: 300px;
 }
 li{
     list-style-type: none;
+}
+
+.navLink{
+    /* text-decoration:underline; */
+    color:darkslateblue;
+}
+.navLink:hover{
+    text-decoration:underline;
+    color:blueviolet;
+}
+
+headerNav{
+    text-decoration:underline;
+    color:blueviolet;
 }

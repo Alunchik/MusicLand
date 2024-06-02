@@ -1,9 +1,6 @@
-import SongList from "../components/Song/SongList/SongList"
 import React, { useEffect } from 'react'
-import WebSocketElem from "../components/AudioPlayer"
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
-import { Axios } from "axios"
 import { Link } from "react-router-dom"
 import axios from "axios"
 import { useCookies } from 'react-cookie'
@@ -58,14 +55,20 @@ const Login = () => {
 
   return(
       <main>
+
       <form onSubmit={OnSumbit}>
-      <Link to="/registration">Click to registration</Link>
+      <h1>Login</h1>
         <label htmlFor="name">Login</label>
       <input type="text" name="login" id="name" onChange={handleChangeName} />
       <label htmlFor="password">Password</label>
-
       <input type="password" id="password" onChange={handleChangePassword} />
       <button>Login</button>
+      <div>
+        <h3>New here?
+          <br/>
+        <Link to="/registration" class="navLink">Go to registration</Link>
+        </h3>
+      </div>
       <div>{err}</div>
     </form>
         </main>

@@ -2,84 +2,82 @@ import React, { Component } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import "../../../style/Songs/songElement.css";
-
-const PlayButton = (props) => {
-
-  // const [playing, setPlaying] = useState(false);
-  // useEffect(() => {
-  //   console.log('Состояние было изменено');
-  //   if(playing){
-  //     startSocket()
-  //   }
-  // }, [playing]);
-
-  //   const togglePlaying = () => {
-  //     setPlaying(!playing)
-  //   }
-    const id = props.id;
-      const startSocket = () => {
-        console.log(id)
-       const socket = new WebSocket( process.env.REACT_APP_API_URL +  ':8089/audio')
-       socket.binaryType = "arraybuffer"
-          socket.onopen = (event) => {
-              console.log("socket opened ");
-              socket.send(id);
-            };
-          socket.onmessage = function (event) {
-              const audio = event.data;
-              try {
-                console.log("got: " + audio)
-                //dispatch(addMessage({ message: audio }));
-              } catch (err) {
-                console.log(err);
-              }
-              if (audio instanceof ArrayBuffer) {
-              playAudio(audio);
-              }
-              else{
-                console.log("not array buffer");
-              }
-            };
-            
-            console.log("sent");
-      };
+import { audioContext } from "../../../redux/slices/songsSlice";
+function playAudio (audioData){
+  // Декодируем аудиоданные в AudioBuffer
+  audioContext.decodeAudioData(audioData, function(buffer) {
+    // Создаем AudioBufferSourceNode
+    const source = audioContext.createBufferSource();
     
-      //const dispatch = useDispatch();
+    // Прикрепляем к AudioBufferSourceNode созданный AudioBuffer
+    source.buffer = buffer;
     
-      //const messages = useSelector((state) => state.messages.messages);
+    // Подключаем AudioBufferSourceNode к выходу AudioContext
+    source.connect(audioContext.destination);
     
-    
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    
-    const playAudio = (audioData) => {
-    // Декодируем аудиоданные в AudioBuffer
-    audioContext.decodeAudioData(audioData, function(buffer) {
-      // Создаем AudioBufferSourceNode
-      const source = audioContext.createBufferSource();
-      
-      // Прикрепляем к AudioBufferSourceNode созданный AudioBuffer
-      source.buffer = buffer;
-      
-      // Подключаем AudioBufferSourceNode к выходу AudioContext
-      source.connect(audioContext.destination);
-      
-      // Начинаем воспроизведение
-      source.start(0);
-    });
-        
-        // Начинаем воспроизведение
-        console.log("PLAYING")
-    };
+    // Начинаем воспроизведение
+    source.start(0);
+  });
+      console.log("PLAYING")
+  };
 
-      const notSupportedMsg =
-      "Your browser does not support the <code>audio</code> element.";
-      return(
-          // {/* {(
-          //   <div className={"audio-btn " + playing ? "play-btn" : "pause-btn"} onClick={togglePlaying}></div>
-          // )} */}
-          <div className={"audio-btn play-btn"} onClick={startSocket}></div>
+function startSocket (AudioID) {
+  const socket = new WebSocket( process.env.REACT_APP_API_URL +  ':8089/audio')
+  socket.binaryType = "arraybuffer"
+     socket.onopen = (event) => {
+         console.log("socket opened ");
+         console.log(AudioID)
+         socket.send(AudioID);
+       };
+     socket.onmessage = function (event) {
+         const audio = event.data;
+         if (audio instanceof ArrayBuffer) {
+           playAudio(audio);
+         }
+         else{
+           console.log("not array buffer");
+         }
+       };
+       console.log("sent");
+ };
 
-      )
+class PlayButton extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      started: false,
+      playing: false,
+      audioContext:  "",
+      AudioID: props.AudioID
+    }
+    console.log("constrr")
+    console.log(props)
+}
+     
+    toggleSongState = () => {
+      if (!this.state.started) {
+        this.setState( {...this.state, started:true,
+           playing:true})
+          startSocket(this.state.AudioID)
+      } else if (this.state.playing) {
+        this.setState({...this.state, playing:false})
+        audioContext.suspend();
+      } else if (!this.playing) {
+        this.setState({...this.state,playing:true})
+        audioContext.resume()
+      }
+      console.log(this.state)
+  }
+      render(){
+        console.log("a")
+        return(
+        this.state.playing ? 
+            <div className={"audio-btn pause-btn"} onClick={this.toggleSongState}></div> :
+            <div className={"audio-btn play-btn"} onClick={this.toggleSongState}></div>
+          
+        )
+};
   }
   
   

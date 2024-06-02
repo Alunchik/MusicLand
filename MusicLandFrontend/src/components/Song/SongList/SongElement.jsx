@@ -21,7 +21,8 @@ const SongElement = (props) => {
 <div>
         <div class="songElement">
             <div className="songLine">
-                {PlayButton({id: props.AudioID})}
+                {/* {JSON.stringify(new PlayButton({id: props.AudioID}))} */}
+                <PlayButton {...props}/>
             <div className="title">
             {
                 (props.ArtistID ? props.ArtistID  : "unnamed") + " - " + props.title

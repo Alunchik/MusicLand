@@ -13,16 +13,16 @@ function Header() {
             </div>
             <div className='Navigation'>
             <p>
-            <Link to={"/"}>Main</Link>
+            <Link class="headerNav" to={"/"}>Main</Link>
             </p>
             <p>
-            <Link to={"/addSong"}>Add Song</Link>
+            <Link class="headerNav" to={"/addSong"}>Add Song</Link>
             </p>
             <p>
-            <Link to={"/me"}>Me</Link>
+            <Link class="headerNav" to={"/me"}>Me</Link>
             </p>
             <p>
-            {hasCookie('isAdmin') ? <Link to={"/admin"}>Admin</Link> : <></>}
+            {hasCookie('isAdmin') ? <Link class="headerNav" to={"/admin"}>Admin</Link> : <></>}
             </p>
             </div>
         </header>    

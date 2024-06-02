@@ -28,6 +28,7 @@ a{
     font-size: large;
     color: whitesmoke;
 }
-.Navigation > div {
-    
+.headerNav:hover{
+    text-decoration:underline;
+    /* color:thistle; */
 }

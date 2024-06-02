@@ -285,9 +285,7 @@ func serveFile(w http.ResponseWriter, r *http.Request){
     if err = e.Write(PCMbuf); err != nil {
         log.Println(err)
     }
-    log.Println(buf.Bytes()[:20])
-    log.Println(out.buf.Bytes()[:20])
-       err = conn.WriteMessage(websocket.BinaryMessage, out.buf.Bytes())
+       err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
 	// Читаем данные по частям из исходного массива и сохраняем их в массив байт ограниченного размера
 	// for position < len(audioBytes) {
 	// 	bytesToRead := len(audioBytes) - position

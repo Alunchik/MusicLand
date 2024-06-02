@@ -80,6 +80,7 @@ export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, Audio
 
 export default songsSlice.reducer;
 
+export const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 export const fetchSongsByUser = createAsyncThunk('songs/fetchSongsByUser', async (login) => {
   const response = await axios.get( process.env.REACT_APP_API_URL + ':8088/songs/byUser', {

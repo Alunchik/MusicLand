@@ -1,7 +1,4 @@
-import SongList from "../components/Song/SongList/SongList"
 import React, { useEffect } from 'react'
-import WebSocketElem from "../components/AudioPlayer"
-import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Link } from "react-router-dom"
@@ -55,18 +52,22 @@ const Registration = () => {
   return(
       <main>
       <form onSubmit={OnSumbit}>
-      <Link to="/login">Click to log in</Link>
-        <label htmlFor="login">Login</label>
+      <h1>Registration</h1>
+      <label htmlFor="login">Login</label>
       <input type="login" name="login" id="login" onChange={handleChangeLogin} />
       <label htmlFor="name">Name</label>
-
       <input type="name" id="name" onChange={handleChangeName} />
       <label htmlFor="password">Password</label>
-
       <input type="password" id="password" onChange={handleChangePassword} />
-      <button>Registration</button>
+      <button>Register</button>
+
+      <h3>Already have an account?
+      <br/>
+        <Link to="/login" class="navLink">Login</Link>
+      </h3>
       <div class="error">{err}</div>
     </form>
+
         </main>
     );
 }
