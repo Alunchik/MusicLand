@@ -8,6 +8,9 @@ import { fetchComments } from "../../../redux/slices/commentsSlice";
 import DeleteButton from "./DeleteButton";
 import '../../../style/Songs/songElement.css'
 import CommentPanel from "../../Comment/CommentPanel";
+import { setPlaying } from "../../../redux/slices/songsSlice";
+
+
 const SongElement = (props) => {
     function hasCookie(name) {
         return document.cookie.split(';').some(c => c.trim().startsWith(name + '='));
@@ -21,15 +24,14 @@ const SongElement = (props) => {
 <div>
         <div class="songElement">
             <div className="songLine">
-                {/* {JSON.stringify(new PlayButton({id: props.AudioID}))} */}
-                <PlayButton {...props}/>
+                {PlayButton({id: props.songData.AudioID, toggleSongState: props.toggleSongState, playing: props.playing})}
             <div className="title">
             {
-                (props.ArtistID ? props.ArtistID  : "unnamed") + " - " + props.title
+                (props.songData.ArtistID ? props.songData.ArtistID  : "unnamed") + " - " + props.title
             }
             </div>
             </div>
-            {hasCookie("isAdmin") ? DeleteButton({AudioId: props.AudioID, id: props.id}) : <></>}
+            {hasCookie("isAdmin") ? DeleteButton({AudioId: props.songData.AudioID, id: props.id}) : <></>}
             </div>
             <div>
                 {/* {songId == props.id ? <></> : CommentPanel({songId: props.id})} */}

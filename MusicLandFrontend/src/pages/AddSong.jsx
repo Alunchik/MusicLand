@@ -19,7 +19,8 @@ const AddSong = () =>
   const [result, setResult] = useState("");
   const dispatch = useDispatch();
   const OnSumbit = (event) => {
-      event.preventDefault();
+    event.preventDefault();
+    if (file.name?.endsWith((".wav"))){
       dispatch(fetchWithJwt())
       console.log(login)
       const fileData = new FormData();
@@ -47,12 +48,21 @@ const AddSong = () =>
             event.target.form.reset();
             document.location.reload()
         }).catch((err) => {
-          setResult("Error - " + err.data);
+          if(!!err.data){
+              setResult("Error - " + err.data);
+          }
         });
     })
         .catch((err) => {
-          setResult("Error - " + err.data);
+          if(!!err.data){
+            setResult("Error - " + err.data);
+        }
         });
+      }
+      else{
+        console.log("a")
+        setResult("Error - invalid format - acceptable format is .wav");
+      }
     };
 
     const [file, setFile] = useState('');
@@ -73,7 +83,7 @@ const AddSong = () =>
         <main>
       <form onSubmit={OnSumbit}>
       <input onChange={handleChangeFile}
-        accept="audio/wav"
+        accept=".wav"
         id="file"
         name="file"
         type="file"

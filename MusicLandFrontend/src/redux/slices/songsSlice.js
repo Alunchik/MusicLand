@@ -9,9 +9,17 @@ const songsSlice = createSlice({
         songs: [],
         status: 'idle',
         mySongStatus: 'idle',
-        error: null
+        error: null,
+        currentSong:"",
+        playing: false
     },
     reducers: {
+      setCurrent(state, action){
+        state.currentSong=action.payload.songID
+      },
+      setPlaying(state, action){
+        state.playing=action.payload.playing
+      }
     },
     extraReducers(builder) {
         builder
@@ -40,6 +48,7 @@ const songsSlice = createSlice({
 });
 
 export const selectAllSongs = state => state.songs.songs;
+
 
 export const fetchSongs = createAsyncThunk('songs/fetchSongs', async () => {
   const response = await axios.get(process.env.REACT_APP_API_URL + ':8088/songs', {
@@ -71,8 +80,10 @@ export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, Audio
         id: AudioId
       }
    }).catch (err => {
-    console.log(err)
+    alert(err)
    })
+   }).catch(err =>{
+    alert(err)
    });
    document.location.reload()
    return 
@@ -80,7 +91,13 @@ export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, Audio
 
 export default songsSlice.reducer;
 
-export const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+export const {setCurrent, setPlaying} = songsSlice.actions;
+
+var audioContext  = new (window.AudioContext || window.webkitAudioContext)();
+
+export const refreshAudioContext = () => { audioContext.close(); audioContext  = new (window.AudioContext || window.webkitAudioContext)()};
+
+export const getAudioContext = () => { return audioContext};
 
 export const fetchSongsByUser = createAsyncThunk('songs/fetchSongsByUser', async (login) => {
   const response = await axios.get( process.env.REACT_APP_API_URL + ':8088/songs/byUser', {
