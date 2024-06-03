@@ -22,7 +22,10 @@ function RenderSongs(songs) {
           
           // Прикрепляем к AudioBufferSourceNode созданный AudioBuffer
           source.buffer = buffer;
-          
+          source.addEventListener("ended", () => {
+            dispatch(setCurrent({songID: ""}))
+            dispatch(setPlaying({playing: false}))
+        });
           // Подключаем AudioBufferSourceNode к выходу AudioContext
           source.connect(audioContext.destination);
           

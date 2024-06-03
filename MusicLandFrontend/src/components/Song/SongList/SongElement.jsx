@@ -15,11 +15,38 @@ const SongElement = (props) => {
     function hasCookie(name) {
         return document.cookie.split(';').some(c => c.trim().startsWith(name + '='));
       }
-    const dispatch = useDispatch()
-    // const songId = useSelector(state => state.comments.songId)
-    // const handleOpenComments = () => {
-    //     dispatch(fetchComments(props.id));
-    // }
+
+    //   const [currTime, setCurrTime] = useState({
+    //     min: "",
+    //     sec: "",
+    //   }); // текущее положение звука в минутах и секундах
+    
+    //   useEffect(() => {
+    //     const sec = duration / 1000;
+    //     const min = Math.floor(sec / 60);
+    //     const secRemain = Math.floor(sec % 60);
+    //     const time = {
+    //       min: min,
+    //       sec: secRemain
+    //     }});
+
+    //     useEffect(() => {
+    //         const interval = setInterval(() => {
+    //           if (props.playing) {
+    //             setSeconds(sound.seek([])); // устанавливаем состояние с текущим значением в секундах
+    //             const min = Math.floor(sound.seek([]) / 60);
+    //             const sec = Math.floor(sound.seek([]) % 60);
+    //             setCurrTime({
+    //               min,
+    //               sec,
+    //             });
+    //           }
+    //         }, 1000);
+    //         return () => clearInterval(interval);
+    //       }, [sound]);
+
+    //   const [seconds, setSeconds] = useState(); // текущая позиция звука в секундах
+
     return (
 <div>
         <div class="songElement">
@@ -27,16 +54,35 @@ const SongElement = (props) => {
                 {PlayButton({id: props.songData.AudioID, toggleSongState: props.toggleSongState, playing: props.playing})}
             <div className="title">
             {
-                (props.songData.ArtistID ? props.songData.ArtistID  : "unnamed") + " - " + props.title
+                (props.songData.ArtistID ? props.songData.ArtistID  : "unnamed") + " - " + props.songData.title
             }
             </div>
             </div>
             {hasCookie("isAdmin") ? DeleteButton({AudioId: props.songData.AudioID, id: props.id}) : <></>}
             </div>
             <div>
-                {/* {songId == props.id ? <></> : CommentPanel({songId: props.id})} */}
             </div>
-            {/* <button onClick={handleOpenComments()}></button> */}
+            {/* <div> */}
+        {/* <div className="time">
+          <p>
+            {currTime.min}:{currTime.sec}
+          </p>
+          <p>
+            {time.min}:{time.sec}
+          </p>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max={duration / 1000}
+          default="0"
+          value={seconds}
+          className="timeline"
+          onChange={(e) => {
+            sound.seek([e.target.value]);
+          }}
+        />
+      </div> */}
             </div>
     )    
 }
