@@ -1,9 +1,5 @@
-import SongList from "../components/Song/SongList/SongList"
-import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
-import { Axios } from "axios"
-import { fetchSongs, selectAllSongs, startListening } from "../redux/slices/songsSlice"
 import axios from "axios"
 
 import { fetchWithJwt } from "../redux/slices/jwtSlice"
@@ -20,6 +16,7 @@ const AddSong = () =>
   const dispatch = useDispatch();
   const OnSumbit = (event) => {
     event.preventDefault();
+    if(!!name){
     if (file.name?.endsWith((".wav"))){
       dispatch(fetchWithJwt())
       console.log(login)
@@ -60,9 +57,13 @@ const AddSong = () =>
         });
       }
       else{
-        console.log("a")
+
         setResult("Error - invalid format - acceptable format is .wav");
       }
+    }
+    else{
+        setResult("Error -  title can not be empty")
+    }
     };
 
     const [file, setFile] = useState('');
@@ -81,17 +82,26 @@ const AddSong = () =>
 
   return(
         <main>
+          <div class="addSong">
+          <h1>Add song</h1>
       <form onSubmit={OnSumbit}>
+        <div>
+      <label htmlFor="file"><h3>load file here</h3></label>
       <input onChange={handleChangeFile}
         accept=".wav"
         id="file"
         name="file"
         type="file"
-      />
-      <input type="text" onChange={handleChangeName} />
-      <button></button>
+      /></div>
+      <div>
+      <label htmlFor="title"><h3>enter title here</h3></label>
+      <input type="text" placeholder='enter title' id="title" onChange={handleChangeName} />
+      </div>
+      <button>Upload</button>
       <div>{result}</div>
     </form>
+    <div>Please load files only in .wav format, now site supports only this format</div>
+    </div>
         </main>
     );
 }

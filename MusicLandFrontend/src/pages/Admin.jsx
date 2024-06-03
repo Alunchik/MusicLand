@@ -12,7 +12,7 @@ const Admin = () => {
     const login = useSelector(state => state.jwt.login);
     return(
         <main>
-            Admin
+            Future admin panel
         </main>
     );
 }

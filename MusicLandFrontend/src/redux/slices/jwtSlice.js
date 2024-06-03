@@ -57,7 +57,6 @@ const jwtSlice = createSlice({
         state.jwt=action.payload.jwt
         state.isAuth=true
         state.role=action.payload.role
-        console.log(action.payload.role + " role")
         state.loadingStatus = 'idle';
         state.error = null;
       })
@@ -83,8 +82,7 @@ async() =>
       "Authorization": jwt,
     },
   }).then(res =>{
-    console.log(res.data.role + "rrr")
-    if(res.data.role === "admin"){
+    if(res.data.role == "admin"){
       console.log("adm")
       var cookie_date = new Date();
       cookie_date.setMonth(cookie_date.getMonth() + 1);

@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import axios from "axios"
-import { useCookies } from 'react-cookie'
 import { useNavigate } from "react-router-dom"
 import { fetchWithJwt } from "../redux/slices/jwtSlice"
 const Login = () => {
@@ -12,7 +11,6 @@ const Login = () => {
   }
   const role = useSelector(state => state.jwt.role);
   const dispatch = useDispatch();
-  const [cookies, setCookie] = useCookies(["token", "isAdmin"]);
   const [err, setErr] = useState('');
   const navigate=useNavigate();
     const OnSumbit = (event) => {
