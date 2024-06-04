@@ -1,6 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from "react"
 import axios from "axios"
+import { jwtDecode } from 'jwt-decode'
+
 
 import { fetchWithJwt } from "../redux/slices/jwtSlice"
 const AddSong = () => 
@@ -11,15 +13,16 @@ const AddSong = () =>
       ));
       return matches ? decodeURIComponent(matches[1]) : undefined;
     }
-  const login = useSelector(state => state.jwt.login);
+  const jwt = getCookie("token")
+  const decrypt = jwtDecode(jwt)
+  const login = decrypt.Login
   const [result, setResult] = useState("");
   const dispatch = useDispatch();
   const OnSumbit = (event) => {
     event.preventDefault();
     if(!!name){
     if (file.name?.endsWith((".wav"))){
-      dispatch(fetchWithJwt())
-      console.log(login)
+      setResult("Your file uploading is in process, please wait...")
       const fileData = new FormData();
             fileData.append('audio', file);
       axios
@@ -57,7 +60,6 @@ const AddSong = () =>
         });
       }
       else{
-
         setResult("Error - invalid format - acceptable format is .wav");
       }
     }

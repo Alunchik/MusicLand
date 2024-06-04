@@ -24,6 +24,17 @@
 
 
   }
+
+  .timeScale{
+    height: 3px;
+    margin-top: 10px;
+    background-color: aliceblue;
+  }
+
+  .timeScalePosition{
+    height: 2px;
+    background-color:black;
+  }
   .deleteButton{
     border-radius: 10px;
     float: right;

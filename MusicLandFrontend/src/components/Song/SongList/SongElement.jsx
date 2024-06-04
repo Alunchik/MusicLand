@@ -56,33 +56,14 @@ const SongElement = (props) => {
             {
                 (props.songData.ArtistID ? props.songData.ArtistID  : "unnamed") + " - " + props.songData.title
             }
+                 {props.TimeScale(props.songData.AudioID)}
+
             </div>
             </div>
             {hasCookie("isAdmin") ? DeleteButton({AudioId: props.songData.AudioID, id: props.id}) : <></>}
             </div>
             <div>
             </div>
-            {/* <div> */}
-        {/* <div className="time">
-          <p>
-            {currTime.min}:{currTime.sec}
-          </p>
-          <p>
-            {time.min}:{time.sec}
-          </p>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max={duration / 1000}
-          default="0"
-          value={seconds}
-          className="timeline"
-          onChange={(e) => {
-            sound.seek([e.target.value]);
-          }}
-        />
-      </div> */}
             </div>
     )    
 }

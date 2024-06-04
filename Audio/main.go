@@ -2,7 +2,7 @@ package main
 
 import(
 	"github.com/gorilla/websocket"
-    "github.com/go-audio/wav"
+    // "github.com/go-audio/wav"
     "go.mongodb.org/mongo-driver/bson/primitive"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/gridfs"
@@ -259,15 +259,15 @@ func serveFile(w http.ResponseWriter, r *http.Request){
             log.Println("Error downloading file: ", err)
             return
         }
+        err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
+    // reader := bytes.NewReader(buf.Bytes())
 
-    reader := bytes.NewReader(buf.Bytes())
-
-    d := wav.NewDecoder(reader)
-    PCMbuf, err := d.FullPCMBuffer()
-    if err != nil {
-	    panic(err)
-    }
-    out := &BufWriter{}
+    // d := wav.NewDecoder(reader)
+    // PCMbuf, err := d.FullPCMBuffer()
+    // if err != nil {
+	//     panic(err)
+    // }
+    // out := &BufWriter{}
     // Читаем и отправляем аудиоданные вебсокетом
    // var chunkSize = 1024
     // audioBytes := PCMbuf.Data;
@@ -277,15 +277,14 @@ func serveFile(w http.ResponseWriter, r *http.Request){
         // chunkBuf.Data = chunk
     // Переменная для отслеживания позиции в исходном массиве байт
 	//position := 0
-    e := wav.NewEncoder(out,
-        PCMbuf.Format.SampleRate,
-        int(d.BitDepth),
-        PCMbuf.Format.NumChannels,
-        int(d.WavAudioFormat))
-    if err = e.Write(PCMbuf); err != nil {
-        log.Println(err)
-    }
-       err = conn.WriteMessage(websocket.BinaryMessage, buf.Bytes())
+    // e := wav.NewEncoder(out,
+    //     PCMbuf.Format.SampleRate,
+    //     int(d.BitDepth),
+    //     PCMbuf.Format.NumChannels,
+    //     int(d.WavAudioFormat))
+    // if err = e.Write(PCMbuf); err != nil {
+    //     log.Println(err)
+    // }
 	// Читаем данные по частям из исходного массива и сохраняем их в массив байт ограниченного размера
 	// for position < len(audioBytes) {
 	// 	bytesToRead := len(audioBytes) - position

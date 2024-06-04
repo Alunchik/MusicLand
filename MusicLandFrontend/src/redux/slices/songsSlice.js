@@ -11,7 +11,8 @@ const songsSlice = createSlice({
         mySongStatus: 'idle',
         error: null,
         currentSong:"",
-        playing: false
+        playing: false,
+        position: 0
     },
     reducers: {
       setCurrent(state, action){
@@ -19,6 +20,10 @@ const songsSlice = createSlice({
       },
       setPlaying(state, action){
         state.playing=action.payload.playing
+      },
+      setPosition(state, action){
+        console.log("settt" + action.payload.position)
+        state.position=action.payload.position
       }
     },
     extraReducers(builder) {
@@ -42,7 +47,7 @@ const songsSlice = createSlice({
             state.songs = action.payload
           })
           .addCase(deleteSong.fulfilled, (state, action) => {
-            state.status.songs.splice(state.status.songs.indexOf(action.payload) , 1)
+            document.location.reload()
           })
       }
 });
@@ -79,19 +84,19 @@ export const deleteSong = createAsyncThunk('songs/deleteSong', async ({id, Audio
       params: {
         id: AudioId
       }
-   }).catch (err => {
+   })
+   .catch (err => {
     alert(err)
    })
    }).catch(err =>{
     alert(err)
    });
-   document.location.reload()
    return 
 });
 
 export default songsSlice.reducer;
 
-export const {setCurrent, setPlaying} = songsSlice.actions;
+export const {setCurrent, setPlaying, setPosition} = songsSlice.actions;
 
 var audioContext  = new (window.AudioContext || window.webkitAudioContext)();
 

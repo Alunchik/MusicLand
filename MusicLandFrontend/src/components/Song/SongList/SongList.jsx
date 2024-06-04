@@ -1,19 +1,29 @@
 import { useState } from "react";
 import SongElement from "./SongElement";
 import { useDispatch, useSelector } from "react-redux";
-import { refreshAudioContext, getAudioContext } from "../../../redux/slices/songsSlice";
+import { refreshAudioContext, getAudioContext, setPosition } from "../../../redux/slices/songsSlice";
 import { setPlaying, setCurrent } from "../../../redux/slices/songsSlice";
-
+import { useEffect } from "react";
 function RenderSongs(songs) {
 
     // const [playing, setPlaying] = useState(false)
     const dispatch = useDispatch()
     const current = useSelector(state => state.songs.currentSong);
     const playing = useSelector(state => state.songs.playing);
-    
+    const position = useSelector(state => state.songs.position);
+
+    const [duration, setDuration] = useState(40.0);
+
+    useEffect(() => {
+      // таймер пересоздаётся каждый раз когда обновляется position
+      const id = setInterval(() => dispatch(setPosition({position: playing ? position+1 : position})), 1000);
+      console.log(position)
+      return () => {
+        clearInterval(id);
+      };
+    }, [position]);
 
     function playAudio (audioData){
-
         var audioContext = getAudioContext();
         // Декодируем аудиоданные в AudioBuffer
         audioContext.decodeAudioData(audioData, function(buffer) {
@@ -22,15 +32,24 @@ function RenderSongs(songs) {
           
           // Прикрепляем к AudioBufferSourceNode созданный AudioBuffer
           source.buffer = buffer;
+          setDuration(buffer.duration)
+          if(position==0){
+            dispatch(setPosition({position: position + 1}))
+          } else {
+            dispatch(setPosition({position: 0}))
+          }
           source.addEventListener("ended", () => {
             dispatch(setCurrent({songID: ""}))
             dispatch(setPlaying({playing: false}))
+            dispatch(setPosition({position: 0}))
+            console.log("stop")
         });
           // Подключаем AudioBufferSourceNode к выходу AudioContext
           source.connect(audioContext.destination);
           
           // Начинаем воспроизведение
           source.start(0);
+          
         });
             console.log("PLAYING")
         };
@@ -54,6 +73,17 @@ function RenderSongs(songs) {
              console.log("sent");
        };
 
+   function TimeScale(AudioID){
+      let timeScaleWidth = 130;
+      return(
+         current == AudioID ?
+        <div class="timeScale" style={{width: timeScaleWidth + "px"}}>
+          <div class="timeScalePosition" style={{width: position/duration*timeScaleWidth + "px"}}></div>
+        </div> : <></>
+      )
+    }
+
+
     const toggleSongState = (AudioID) => {
         console.log(AudioID.data)
         let started = current == AudioID;
@@ -73,16 +103,16 @@ function RenderSongs(songs) {
 
     return (
         <ul class="songList">
+          {position ? <></> : <></>}
         {
             songs.map( (songData) => {
-                console.log(songData.AudioID)
-                console.log(current)
-                console.log(current===songData.AudioID && playing)
                 let props = {songData: songData, toggleSongState: function() {
                     toggleSongState(songData.AudioID)
                 },
-                playing: current==songData.AudioID && playing
-            };
+                id: songData.id,
+                playing: current==songData.AudioID && playing,
+                TimeScale: TimeScale
+              };
                 return(
                     <li>
                         {SongElement(props)}
